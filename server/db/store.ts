@@ -60,37 +60,53 @@ let mongoConnected = false;
 let lastMongoError: string | null = null;
 let lastMongoSyncAt: string = new Date().toISOString();
 
+mongoose.connection.on('error', (err) => {
+  mongoConnected = false;
+  lastMongoError = err instanceof Error ? err.message : 'MongoDB connection error';
+});
+
 export function isMongoConnected(): boolean {
   return mongoConnected && mongoose.connection.readyState === 1;
 }
 
-export async function connectDatabase(): Promise<{ mode: 'mongodb' | 'document-store'; uri: string }> {
+export async function tryConnectMongo(): Promise<void> {
   const uri = (process.env.MONGODB_URI || '').trim();
   const isConfigured = Boolean(uri && !uri.includes('MY_MONGODB') && !uri.includes('username:password'));
-  if (isConfigured) {
-    try {
-      if (mongoose.connection.readyState !== 1) {
-        await mongoose.connect(uri, { serverSelectionTimeoutMS: 3000 });
-      }
-      mongoConnected = true;
-      lastMongoError = null;
-      lastMongoSyncAt = new Date().toISOString();
-      console.log('[Database] Connected to MongoDB instance via Mongoose.');
-    } catch (err) {
-      mongoConnected = false;
-      lastMongoError = err instanceof Error ? err.message : 'Could not reach MongoDB host';
-      console.log('[Database] External MongoDB daemon not reachable; using persistent local document store.');
-    }
-  } else {
+  if (!isConfigured) {
     mongoConnected = false;
     lastMongoError = uri
       ? 'MONGODB_URI still contains placeholder values.'
       : 'MONGODB_URI environment variable is not set in Secrets yet.';
+    return;
   }
-  await ensureSeededState();
-  if (isMongoConnected()) {
+
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 1500,
+        connectTimeoutMS: 1500,
+      });
+    }
+    mongoConnected = true;
+    lastMongoError = null;
+    lastMongoSyncAt = new Date().toISOString();
+    console.log('[Database] Connected to MongoDB instance via Mongoose.');
     await hydrateOrSyncMongoCollections();
+  } catch (err) {
+    mongoConnected = false;
+    lastMongoError = err instanceof Error ? err.message : 'Could not reach MongoDB host';
+    console.log('[Database] External MongoDB daemon not reachable; using persistent local document store.');
   }
+}
+
+export async function connectDatabase(waitForMongo = false): Promise<{ mode: 'mongodb' | 'document-store'; uri: string }> {
+  await ensureSeededState();
+  if (waitForMongo) {
+    await tryConnectMongo();
+  } else {
+    void tryConnectMongo();
+  }
+  const uri = (process.env.MONGODB_URI || '').trim();
   return {
     mode: isMongoConnected() ? 'mongodb' : 'document-store',
     uri: isMongoConnected() ? uri : DB_FILE,
@@ -918,9 +934,14 @@ export async function ensureSeededState(): Promise<DatabaseState> {
         (u) => u.id === 'usr-admin-1' || u.email.toLowerCase() === adminEmail
       );
       if (adminUser) {
-        adminUser.email = adminEmail;
-        adminUser.passwordHash = await hashPassword(adminPassword);
-        added = true;
+        if (adminUser.email !== adminEmail) {
+          adminUser.email = adminEmail;
+          added = true;
+        }
+        if (!adminUser.passwordHash?.startsWith('$2') || process.env.INITIAL_ADMIN_PASSWORD) {
+          adminUser.passwordHash = await hashPassword(adminPassword);
+          added = true;
+        }
       }
       if (added) {
         saveDatabase();
@@ -1257,7 +1278,7 @@ export function getDatabaseStatusSummary() {
 }
 
 export async function reconnectAndSyncMongoDB() {
-  await connectDatabase();
+  await connectDatabase(true);
   return getDatabaseStatusSummary();
 }
 

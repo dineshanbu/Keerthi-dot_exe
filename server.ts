@@ -2078,6 +2078,14 @@ async function startServer() {
   });
 }
 
+process.on('uncaughtException', (err) => {
+  console.error('[Process Uncaught Exception]:', err.message);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[Process Unhandled Rejection]:', reason);
+});
+
 startServer().catch((err) => {
   console.error('Failed to start server:', err);
   process.exit(1);
