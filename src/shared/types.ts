@@ -105,6 +105,29 @@ export interface PromptItem {
   status: 'Draft' | 'Published';
   copiesCount: number;
   likesCount?: number;
+  /** Price in paise; 0 or undefined keeps the prompt free. */
+  priceInPaise?: number;
+  /** Paid prompts remain hidden until a verified purchase. */
+  isPaid?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DigitalOrderItem {
+  id: string;
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  promptId: string;
+  promptTitle: string;
+  promptSlug: string;
+  amountInPaise: number;
+  currency: 'INR';
+  status: 'created' | 'paid' | 'refunding' | 'failed' | 'refunded';
+  provider: 'razorpay';
+  providerOrderId: string;
+  providerPaymentId?: string;
+  providerRefundId?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -26,6 +26,7 @@ import {
   Lock,
   LogIn,
   UserPlus,
+  LockKeyhole,
 } from 'lucide-react';
 import type {
   PromptItem,
@@ -73,7 +74,7 @@ export const GlassCard: React.FC<{
   className?: string;
   subtle?: boolean;
 }> = ({ children, className = '', subtle = false }) => (
-  <div className={`${subtle ? 'glass-card-subtle' : 'glass-panel'} rounded-2xl ${className}`}>
+  <div className={`${subtle ? 'glass-card-subtle' : 'glass-panel'} glass-card-shell rounded-2xl ${className}`}>
     {children}
   </div>
 );
@@ -92,11 +93,11 @@ export const GlassButton: React.FC<
 
   const variantClasses = {
     primary:
-      'bg-gradient-to-r from-[#8B5CF6] via-[#7C3AED] to-[#6366F1] text-white shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 hover:brightness-105',
-    dark: 'bg-[#0F172A] text-white hover:bg-[#1E293B] shadow-md shadow-slate-900/15',
+      'glass-action-button glass-action-primary bg-gradient-to-r from-[#8B5CF6] via-[#7C3AED] to-[#6366F1] text-white shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 hover:brightness-105',
+    dark: 'glass-action-button glass-action-dark bg-[#0F172A] text-white hover:bg-[#1E293B] shadow-md shadow-slate-900/15',
     glass:
-      'bg-white/80 hover:bg-white text-slate-800 border border-white/90 shadow-sm hover:shadow',
-    danger: 'bg-rose-600 text-white hover:bg-rose-700 shadow-sm',
+      'glass-action-button glass-action-secondary bg-white/80 hover:bg-white text-slate-800 border border-white/90 shadow-sm hover:shadow',
+    danger: 'glass-action-button glass-action-danger bg-rose-600 text-white hover:bg-rose-700 shadow-sm',
   }[variant];
 
   return (
@@ -301,14 +302,15 @@ export const PromptCard: React.FC<{
   };
 
   return (
-    <GlassCard className="p-4 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
+    <GlassCard className="prompt-showcase-card p-4 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
       <div>
-        <div className="relative h-44 rounded-xl overflow-hidden mb-3.5 bg-slate-100">
+        <div className="prompt-card-visual relative h-44 rounded-xl overflow-hidden mb-3.5 bg-slate-100">
           <SmartImage
             src={prompt.previewImage}
             alt={prompt.title}
             className="w-full h-full object-cover"
           />
+          <img src="/assets/media/glass-sparkle-loop.gif" alt="" aria-hidden="true" className="card-loop-gif card-loop-gif--sparkle" loading="lazy" />
           <button
             type="button"
             onClick={handleToggleSave}
@@ -337,17 +339,19 @@ export const PromptCard: React.FC<{
         <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
           {prompt.shortDescription}
         </p>
-        <div className="mt-3 p-2.5 rounded-xl bg-slate-900/5 border border-slate-200/70 font-mono text-xs text-slate-700 line-clamp-2">
-          {prompt.promptText}
-        </div>
+        {prompt.isPaid && !prompt.promptText ? (
+          <div className="mt-3 flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50/80 p-3 text-xs font-semibold text-indigo-800">
+            <LockKeyhole className="h-4 w-4 shrink-0" /> Preview locked · ₹{((prompt.priceInPaise || 0) / 100).toLocaleString('en-IN')}
+          </div>
+        ) : <div className="mt-3 p-2.5 rounded-xl bg-slate-900/5 border border-slate-200/70 font-mono text-xs text-slate-700 line-clamp-2">{prompt.promptText}</div>}
       </div>
 
-      <div className="flex items-center justify-between gap-2 pt-3.5 mt-3.5 border-t border-slate-200/60">
+      <div className="prompt-card-actions flex items-center justify-between gap-2 pt-3.5 mt-3.5 border-t border-slate-200/60">
         <span className="text-xs text-slate-500 font-mono tabular-nums">
           {prompt.copiesCount.toLocaleString()} copies
         </span>
         <div className="flex items-center gap-1.5">
-          <button
+          {!(prompt.isPaid && !prompt.promptText) && <button
             type="button"
             onClick={handleToggleSave}
             aria-pressed={saved}
@@ -360,7 +364,7 @@ export const PromptCard: React.FC<{
           >
             <Bookmark className={`w-3.5 h-3.5 ${saved ? 'fill-current text-rose-600' : ''}`} />
             <span>{saved ? 'Saved' : 'Save'}</span>
-          </button>
+          </button>}
           <button
             type="button"
             onClick={handleCopy}
@@ -397,7 +401,7 @@ export const BlogCard: React.FC<{ post: BlogPost; compact?: boolean }> = ({ post
   return (
     <Link
       to={`/blog/${post.slug}`}
-      className="group glass-panel rounded-2xl p-3 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+      className={`group blog-showcase-card ${compact ? 'blog-showcase-card--compact' : ''} glass-panel glass-card-shell rounded-2xl p-3 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}
     >
       <div>
         <div className={`relative ${compact ? 'h-32' : 'h-44'} rounded-xl overflow-hidden bg-slate-900 mb-3`}>
@@ -406,6 +410,7 @@ export const BlogCard: React.FC<{ post: BlogPost; compact?: boolean }> = ({ post
             alt={post.imageAlt || post.title}
             className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
           />
+          <img src="/assets/media/glass-orbit-loop.gif" alt="" aria-hidden="true" className="card-loop-gif card-loop-gif--orbit" loading="lazy" />
           <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-white/90 backdrop-blur-md text-[10px] font-bold tracking-wider uppercase text-slate-800 shadow-xs">
             {post.category}
           </div>
@@ -420,9 +425,7 @@ export const BlogCard: React.FC<{ post: BlogPost; compact?: boolean }> = ({ post
         >
           {post.title}
         </h3>
-        {!compact && (
-          <p className="text-xs text-slate-600 mt-1.5 line-clamp-2 leading-relaxed">{post.excerpt}</p>
-        )}
+        <p className={`blog-card-excerpt text-xs text-slate-600 mt-1.5 line-clamp-2 leading-relaxed ${compact ? 'blog-card-excerpt--compact' : ''}`}>{post.excerpt}</p>
       </div>
       <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-2.5 pt-2 border-t border-slate-100 font-mono tabular-nums">
         <Clock className="w-3 h-3 text-slate-400 shrink-0" />
@@ -460,7 +463,7 @@ export const NotificationBell: React.FC = () => {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label={`Notifications (${unreadCount} unread)`}
-        className="relative p-2 rounded-full bg-white/80 hover:bg-white border border-slate-200/80 text-slate-700 transition-colors cursor-pointer"
+        className="notification-bell-trigger relative w-10 h-10 rounded-full grid place-items-center transition-colors cursor-pointer"
       >
         <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
@@ -617,10 +620,10 @@ export const AuthorSpotlightSection: React.FC<{
     <section
       role="region"
       aria-label="About the Author"
-      className="glass-panel rounded-3xl p-6 sm:p-8 space-y-6 border border-white/90"
+      className="author-spotlight glass-panel rounded-3xl p-6 sm:p-8 space-y-6 border border-white/90"
     >
       {/* Creator Header: Avatar, Name, Role, Stats & Bio */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-slate-200/70">
+      <div className="author-spotlight-header flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-slate-200/70">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-white shadow-md bg-purple-100 shrink-0">
             <SmartImage
@@ -665,7 +668,7 @@ export const AuthorSpotlightSection: React.FC<{
         </div>
 
         {/* Creator Community Actions */}
-        <div className="flex flex-row md:flex-col items-center md:items-end gap-2 shrink-0">
+        <div className="author-spotlight-actions flex flex-row md:flex-col items-center md:items-end gap-2 shrink-0">
           {author.instagramUrl && (
             <a
               href={author.instagramUrl}
@@ -699,7 +702,7 @@ export const AuthorSpotlightSection: React.FC<{
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="author-content-tabs flex items-center gap-1.5">
             {(
               [
                 { id: 'all', label: 'All Content' },

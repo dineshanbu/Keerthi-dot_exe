@@ -81,6 +81,8 @@ const PromptSchema = new Schema(
     status: { type: String, enum: ['Draft', 'Published'], default: 'Published', index: true },
     copiesCount: { type: Number, default: 0 },
     likesCount: { type: Number, default: 0 },
+    priceInPaise: { type: Number, default: 0, min: 0 },
+    isPaid: { type: Boolean, default: false, index: true },
   },
   { timestamps: true }
 );
@@ -269,6 +271,26 @@ const MediaAssetSchema = new Schema(
   { timestamps: true }
 );
 
+const DigitalOrderSchema = new Schema(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    userId: { type: String, required: true, index: true },
+    customerName: { type: String, required: true },
+    customerEmail: { type: String, required: true, index: true },
+    promptId: { type: String, required: true, index: true },
+    promptTitle: { type: String, required: true },
+    promptSlug: { type: String, required: true },
+    amountInPaise: { type: Number, required: true, min: 1 },
+    currency: { type: String, enum: ['INR'], default: 'INR' },
+    status: { type: String, enum: ['created', 'paid', 'refunding', 'failed', 'refunded'], default: 'created', index: true },
+    provider: { type: String, enum: ['razorpay'], default: 'razorpay' },
+    providerOrderId: { type: String, required: true, unique: true },
+    providerPaymentId: { type: String, default: '' },
+    providerRefundId: { type: String, default: '' },
+  },
+  { timestamps: true }
+);
+
 const AuditLogSchema = new Schema(
   {
     actorId: { type: String, required: true, index: true },
@@ -316,4 +338,5 @@ export const Models = {
   InstagramMedia: mongoose.models.InstagramMedia || mongoose.model('InstagramMedia', InstagramMediaSchema),
   MediaAsset: mongoose.models.MediaAsset || mongoose.model('MediaAsset', MediaAssetSchema),
   AuditLog: mongoose.models.AuditLog || mongoose.model('AuditLog', AuditLogSchema),
+  DigitalOrder: mongoose.models.DigitalOrder || mongoose.model('DigitalOrder', DigitalOrderSchema),
 };

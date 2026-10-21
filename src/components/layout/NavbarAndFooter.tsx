@@ -14,6 +14,12 @@ import {
   BookOpen,
   Clock,
   ArrowRight,
+  ArrowUpRight,
+  Bookmark,
+  ChevronDown,
+  Home as HomeIcon,
+  Briefcase,
+  Mail,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { NotificationBell, SmartImage } from '../ui/GlassComponents';
@@ -156,11 +162,11 @@ export const GlassNavbar: React.FC = () => {
   const hasActiveFilter = Boolean(searchQuery.trim()) || selectedCategory !== 'All';
 
   return (
-    <header className="sticky top-0 z-40 glass-pill-nav">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-50 glass-pill-nav site-header px-2 sm:px-3 lg:px-4 py-2">
+      <div className="nav-shell w-full mx-auto min-h-[60px] lg:min-h-[70px] px-3 sm:px-4 lg:px-5 flex items-center justify-between gap-2 sm:gap-3">
         {/* Brand Identity */}
-        <Link to="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white shadow-sm bg-purple-100 shrink-0">
+        <Link to="/" className="nav-brand order-2 lg:order-none flex items-center gap-2.5 shrink-0">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-white shadow-sm bg-purple-100 shrink-0 ring-2 ring-white/60">
             <SmartImage
               src={settings?.logoUrl || '/assets/media/keerthi-avatar.png'}
               alt="Keerthi_dot_exe"
@@ -178,7 +184,7 @@ export const GlassNavbar: React.FC = () => {
         </Link>
 
         {/* Primary Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-4 xl:gap-5 text-xs font-semibold text-slate-700" aria-label="Main Navigation">
+        <nav className="hidden lg:flex items-center gap-2 xl:gap-3 text-xs font-semibold text-slate-700" aria-label="Main Navigation">
           <Link
             to="/"
             className={`px-3 py-1.5 rounded-full transition-colors whitespace-nowrap shrink-0 ${
@@ -227,7 +233,8 @@ export const GlassNavbar: React.FC = () => {
         </nav>
 
         {/* Unified Global Search Bar & Account Actions */}
-        <div className="hidden md:flex items-center gap-2.5 shrink-0">
+        <div className="hidden md:flex order-4 lg:order-none items-center gap-2.5 shrink-0">
+          <Link to="/prompts" aria-label="Open prompt library" title="Prompt library" className="hidden xl:flex nav-icon-link items-center justify-center gap-1 w-16 h-11 rounded-full text-slate-700"><Bookmark className="w-4 h-4" /><ChevronDown className="w-3 h-3" /></Link>
           <div ref={searchContainerRef} className="relative">
             <form onSubmit={handleSearchSubmit} className="relative flex items-center">
               <Search className="w-3.5 h-3.5 text-purple-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -241,10 +248,10 @@ export const GlassNavbar: React.FC = () => {
                   setSearchQuery(e.target.value);
                   setSearchOpen(true);
                 }}
-                placeholder="Search prompts & blog posts by title or category..."
-                aria-label="Global search for prompts and blog posts by title or category"
+                placeholder="Search AI tools, tutorials, ideas..."
+                aria-label="Search AI prompts, blog posts, tutorials and tools"
                 aria-expanded={searchOpen}
-                className="w-60 xl:w-80 pl-8 pr-14 py-1.5 rounded-full bg-white/90 border border-slate-200/90 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/15 transition-all"
+                className="w-44 lg:w-52 xl:w-64 2xl:w-72 pl-9 pr-14 py-2.5 rounded-full bg-white/90 border border-slate-200/90 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/15 transition-all"
               />
               {hasActiveFilter ? (
                 <button
@@ -520,9 +527,9 @@ export const GlassNavbar: React.FC = () => {
             )}
           </div>
 
+          <NotificationBell />
           {user ? (
             <div className="flex items-center gap-2">
-              <NotificationBell />
               {user.role === 'Admin' && (
                 <Link
                   to="/admin"
@@ -558,20 +565,32 @@ export const GlassNavbar: React.FC = () => {
               </Link>
               <Link
                 to="/signup"
-                className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] text-white text-xs font-semibold shadow-sm shadow-purple-500/25 hover:brightness-105 transition-all whitespace-nowrap shrink-0"
+                className="nav-signup-link inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#287cff] via-[#345ef0] to-[#8256ee] text-white text-xs font-semibold shadow-sm shadow-blue-500/25 hover:brightness-105 transition-all whitespace-nowrap shrink-0"
               >
                 Sign Up
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           )}
         </div>
 
         {/* Mobile Hamburger */}
+        <div className="mobile-top-actions order-3 md:hidden flex items-center gap-1.5 sm:gap-2">
+          <button type="button" aria-label="Open mobile search" onClick={() => setMobileMenuOpen(true)} className="nav-icon-link w-9 h-9 sm:w-10 sm:h-10 rounded-full grid place-items-center"><Search className="w-4 h-4" /></button>
+          <NotificationBell />
+          {user ? (
+            <Link to="/profile" aria-label="Open profile" className="nav-icon-link w-9 h-9 sm:w-10 sm:h-10 rounded-full grid place-items-center"><User className="w-4 h-4" /></Link>
+          ) : (
+            <Link to="/signup" className="mobile-signup-link px-3 sm:px-4 h-9 sm:h-10 inline-flex items-center rounded-full text-[11px] sm:text-xs font-bold text-white whitespace-nowrap">Sign Up</Link>
+          )}
+        </div>
+
         <button
           type="button"
           onClick={() => setMobileMenuOpen((o) => !o)}
           aria-label="Toggle navigation menu"
-          className="lg:hidden p-2 rounded-xl bg-white/85 border border-slate-200/80 text-slate-700"
+          aria-expanded={mobileMenuOpen}
+          className="mobile-menu-toggle order-1 lg:order-last hidden md:grid lg:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-full place-items-center"
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -579,7 +598,7 @@ export const GlassNavbar: React.FC = () => {
 
       {/* Mobile Navigation Drawer with Global Search by Title or Category */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 pt-3 pb-5 space-y-3">
+        <div className="mobile-nav-drawer lg:hidden px-3 sm:px-4 pt-3 pb-4 space-y-3">
           <form onSubmit={handleSearchSubmit} className="space-y-2.5">
             <div className="relative">
               <Search className="w-4 h-4 text-purple-600 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -756,14 +775,14 @@ export const GlassNavbar: React.FC = () => {
                 <Link
                   to="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800"
+                  className="mobile-auth-login flex-1 text-center py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800"
                 >
                   Login
                 </Link>
                 <Link
                   to="/signup"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center py-2 rounded-xl bg-purple-600 text-white text-xs font-semibold"
+                  className="mobile-auth-signup flex-1 text-center py-2.5 rounded-xl text-xs font-semibold"
                 >
                   Sign Up
                 </Link>
@@ -778,11 +797,12 @@ export const GlassNavbar: React.FC = () => {
 
 export const GlassFooter: React.FC = () => {
   const { homeData } = useApp();
+  const location = useLocation();
   const settings = homeData?.settings;
 
   return (
-    <footer className="mt-16 border-t border-white/90 bg-white/75 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row items-center justify-between gap-5 text-xs text-slate-600">
+    <footer className="site-footer mt-16 border-t border-white/90 bg-white/75 backdrop-blur-xl">
+      <div className="site-footer-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row items-center justify-between gap-5 text-xs text-slate-600">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-2.5 shrink-0">
           <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
@@ -867,6 +887,23 @@ export const GlassFooter: React.FC = () => {
           </span>
         </div>
       </div>
+      <nav className="mobile-bottom-nav" aria-label="Quick navigation">
+        <Link to="/" className={location.pathname === '/' ? 'is-active' : ''} aria-current={location.pathname === '/' ? 'page' : undefined}>
+          <HomeIcon aria-hidden="true" /><span>Home</span>
+        </Link>
+        <Link to="/#services" className={location.hash === '#services' ? 'is-active' : ''}>
+          <Briefcase aria-hidden="true" /><span>Services</span>
+        </Link>
+        <Link to="/prompts" className={location.pathname.startsWith('/prompts') ? 'is-active' : ''} aria-current={location.pathname.startsWith('/prompts') ? 'page' : undefined}>
+          <Sparkles aria-hidden="true" /><span>Prompts</span>
+        </Link>
+        <Link to="/blog" className={location.pathname.startsWith('/blog') ? 'is-active' : ''} aria-current={location.pathname.startsWith('/blog') ? 'page' : undefined}>
+          <BookOpen aria-hidden="true" /><span>Blog</span>
+        </Link>
+        <Link to="/#contact" className={location.hash === '#contact' ? 'is-active' : ''}>
+          <Mail aria-hidden="true" /><span>Contact</span>
+        </Link>
+      </nav>
     </footer>
   );
 };

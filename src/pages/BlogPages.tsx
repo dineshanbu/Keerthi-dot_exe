@@ -100,7 +100,7 @@ export const BlogDirectoryPage: React.FC = () => {
         </div>
 
         {/* Category Filter Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pt-5 mt-5 border-t border-slate-200/70">
+        <div className="blog-category-list flex items-center gap-2 overflow-x-auto pt-5 mt-5 border-t border-slate-200/70">
           {['All', ...categories].map((cat) => (
             <button
               key={cat}
@@ -216,13 +216,25 @@ export const BlogDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedShare, setCopiedShare] = useState(false);
+  const [readingProgress, setReadingProgress] = useState(0);
+  const [articleTextSize, setArticleTextSize] = useState<'standard' | 'large'>('standard');
 
   useEffect(() => {
     async function load() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`/api/public/blogs/${slug}`);
+        const viewKey = `keerthi-blog-view:${slug}`;
+        let countThisView = false;
+        try {
+          if (sessionStorage.getItem(viewKey) !== '1') {
+            sessionStorage.setItem(viewKey, '1');
+            countThisView = true;
+          }
+        } catch {
+          countThisView = true;
+        }
+        const res = await fetch(`/api/public/blogs/${slug}${countThisView ? '' : '?countView=0'}`);
         if (!res.ok) throw new Error('Not found');
         const data = await res.json();
         setArticle(data.article);
@@ -233,6 +245,7 @@ export const BlogDetailPage: React.FC = () => {
         setNextArticle(data.nextArticle || null);
         document.title = data.article.seoTitle || `${data.article.title} | Keerthi_dot_exe`;
       } catch {
+        try { sessionStorage.removeItem(`keerthi-blog-view:${slug}`); } catch { /* storage can be disabled */ }
         setError('Blog article not found.');
       } finally {
         setLoading(false);
@@ -240,6 +253,31 @@ export const BlogDetailPage: React.FC = () => {
     }
     load();
   }, [slug]);
+
+  useEffect(() => {
+    if (!article) return;
+    let frame = 0;
+    const updateProgress = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const content = document.querySelector<HTMLElement>('.article-prose');
+        if (!content) return;
+        const start = content.getBoundingClientRect().top + window.scrollY;
+        const range = Math.max(1, content.offsetHeight - window.innerHeight * 0.72);
+        const progress = Math.min(100, Math.max(0, ((window.scrollY - start) / range) * 100));
+        setReadingProgress(Math.round(progress));
+      });
+    };
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress);
+    updateProgress();
+    return () => {
+      window.removeEventListener('scroll', updateProgress);
+      window.removeEventListener('resize', updateProgress);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [article?.slug]);
 
   if (loading) {
     return (
@@ -272,9 +310,13 @@ export const BlogDetailPage: React.FC = () => {
   };
 
   return (
-    <article className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+    <article className="blog-detail-page max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      <div className="article-reading-progress" role="progressbar" aria-label="Article reading progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={readingProgress}>
+        <span style={{ width: `${readingProgress}%` }} />
+        <small>{readingProgress}% read</small>
+      </div>
       {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center justify-between text-xs text-slate-500">
+      <nav aria-label="Breadcrumb" className="blog-detail-breadcrumb flex items-center justify-between text-xs text-slate-500">
         <Link
           to="/blog"
           className="inline-flex items-center gap-1.5 font-semibold text-slate-700 hover:text-purple-700"
@@ -332,9 +374,17 @@ export const BlogDetailPage: React.FC = () => {
               <span>{copiedShare ? 'Link Copied' : 'Share Article'}</span>
             </button>
           </div>
+          <div className="article-reading-actions">
+            <button type="button" onClick={() => document.querySelector('.article-prose')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="article-start-reading"><BookOpen className="w-4 h-4" /> Start reading</button>
+            <div className="article-text-controls" role="group" aria-label="Text size">
+              <span>Text size</span>
+              <button type="button" aria-pressed={articleTextSize === 'standard'} onClick={() => setArticleTextSize('standard')}>A</button>
+              <button type="button" aria-pressed={articleTextSize === 'large'} onClick={() => setArticleTextSize('large')}>A+</button>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-8 rounded-2xl overflow-hidden bg-slate-900 max-h-96 border border-white shadow-lg">
+        <div className="article-hero-image mt-8 rounded-2xl overflow-hidden bg-slate-900 max-h-96 border border-white shadow-lg">
           <SmartImage
             src={article.featuredImage}
             alt={article.imageAlt || article.title}
@@ -342,10 +392,17 @@ export const BlogDetailPage: React.FC = () => {
           />
         </div>
 
+        {toc.length > 0 && (
+          <details className="article-toc-mobile">
+            <summary><BookOpen className="w-4 h-4" /> In this article <span>{toc.length} sections</span></summary>
+            <ul>{toc.map((heading) => <li key={`mobile-${heading.id}`} className={heading.level === 3 ? 'is-subheading' : ''}><a href={`#${heading.id}`}>{heading.text}</a></li>)}</ul>
+          </details>
+        )}
+
         {/* Main Content + Table of Contents Sidebar */}
         <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-8">
           {toc.length > 0 && (
-            <aside className="lg:col-span-4 order-1 lg:order-2">
+            <aside className="article-toc-desktop lg:col-span-4 order-1 lg:order-2">
               <div className="sticky top-24 rounded-2xl bg-slate-50/90 border border-slate-200/80 p-5 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-800 font-display">
                   <BookOpen className="w-4 h-4 text-purple-600" />
@@ -372,7 +429,7 @@ export const BlogDetailPage: React.FC = () => {
 
           <div className={`${toc.length > 0 ? 'lg:col-span-8' : 'lg:col-span-12'} order-2 lg:order-1`}>
             <div
-              className="article-prose"
+              className={`article-prose article-text--${articleTextSize}`}
               dangerouslySetInnerHTML={{ __html: htmlWithIds }}
             />
 

@@ -32,6 +32,7 @@ import {
   verifyAccessToken,
   verifyRefreshToken,
   encryptSensitiveToken,
+  decryptSensitiveToken,
   generateSingleUseResetToken,
   hashResetToken,
   type JwtPayload,
@@ -52,7 +53,7 @@ import {
   filterSavedPrompts,
   buildAuthorContentPortfolio,
 } from './src/utils/platformLogic.ts';
-import { PROMPT_CATEGORIES, PRIMARY_PROMPT_FILTERS, type PromptCategory } from './src/shared/types.ts';
+import { PROMPT_CATEGORIES, PRIMARY_PROMPT_FILTERS, type DigitalOrderItem, type InstagramMediaItem, type PromptCategory, type PromptItem } from './src/shared/types.ts';
 
 declare global {
   namespace Express {
@@ -136,7 +137,10 @@ async function startServer() {
     })
   );
   app.use(cookieParser());
-  app.use(express.json({ limit: '2mb' }));
+  app.use(express.json({
+    limit: '2mb',
+    verify: (req, _res, buffer) => { (req as Request & { rawBody?: Buffer }).rawBody = Buffer.from(buffer); },
+  }));
   app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
   // Auth cookies helper
@@ -629,7 +633,13 @@ async function startServer() {
   // ============================================================================
   // PUBLIC CONTENT ROUTES
   // ============================================================================
-  app.get('/api/public/home', (_req, res) => {
+  const hasPromptPurchase = (promptId: string, userId?: string) => Boolean(userId && getDb().orders?.some((order) =>
+    order.userId === userId && order.promptId === promptId && order.status === 'paid'
+  ));
+  const publicPrompt = (prompt: PromptItem, userId?: string) =>
+    prompt.isPaid && !hasPromptPurchase(prompt.id, userId) ? { ...prompt, promptText: '' } : prompt;
+
+  app.get('/api/public/home', (req, res) => {
     runScheduledBlogPublisher();
     const db = getDb();
     const publishedBlogs = db.blogs
@@ -647,7 +657,7 @@ async function startServer() {
         publishedBlogsCount: publishedBlogs.length,
         categoriesCount: PROMPT_CATEGORIES.length,
       },
-      featuredPrompts: publishedPrompts.filter((p) => p.featured).slice(0, 6),
+      featuredPrompts: publishedPrompts.filter((p) => p.featured).slice(0, 6).map((p) => publicPrompt(p, req.user?.sub)),
       latestBlogs: publishedBlogs.slice(0, 5),
       instagramMedia: visibleInstagram.slice(0, 6),
       instagramState: getInstagramIntegrationSummary(),
@@ -687,7 +697,7 @@ async function startServer() {
         category: 'All',
         categories: availableCategories,
         matchedCategories: [],
-        prompts: type === 'blogs' ? [] : topPrompts,
+        prompts: type === 'blogs' ? [] : topPrompts.map((p) => publicPrompt(p, req.user?.sub)),
         blogs: type === 'prompts' ? [] : topBlogs,
         totalMatches: (type === 'blogs' ? 0 : topPrompts.length) + (type === 'prompts' ? 0 : topBlogs.length),
       });
@@ -702,7 +712,7 @@ async function startServer() {
       category,
       categories: availableCategories,
       matchedCategories: results.matchedCategories,
-      prompts,
+      prompts: prompts.map((p) => publicPrompt(p, req.user?.sub)),
       blogs,
       totalMatches: prompts.length + blogs.length,
     });
@@ -769,8 +779,10 @@ async function startServer() {
     }
 
     const article = published[idx];
-    article.views += 1;
-    saveDatabase();
+    if (req.query.countView !== '0') {
+      article.views += 1;
+      saveDatabase();
+    }
 
     const relatedPrompts = db.prompts
       .filter((p) => p.status === 'Published' && article.relatedPromptSlugs.includes(p.slug))
@@ -782,7 +794,7 @@ async function startServer() {
     const portfolio = buildAuthorContentPortfolio({
       authorName: article.author?.name || db.settings.creatorName || 'Keerthi_dot_exe',
       currentBlogId: article.id,
-      prompts: db.prompts,
+      prompts: db.prompts.map((p) => publicPrompt(p, req.user?.sub)),
       blogs: published,
       limit: 3,
     });
@@ -799,17 +811,17 @@ async function startServer() {
       whatsappUrl: db.settings.whatsappChannelUrl,
       totalPublishedPrompts: portfolio.totalPublishedPrompts,
       totalPublishedBlogs: portfolio.totalPublishedBlogs,
-      otherPrompts: portfolio.otherPrompts,
+      otherPrompts: portfolio.otherPrompts.map((p) => publicPrompt(p, req.user?.sub)),
       otherBlogs: portfolio.otherBlogs,
     };
 
     return res.json({
       article,
       authorSpotlight,
-      relatedPrompts:
-        relatedPrompts.length > 0
-          ? relatedPrompts
-          : db.prompts.filter((p) => p.status === 'Published' && p.featured).slice(0, 2),
+      relatedPrompts: (relatedPrompts.length > 0
+        ? relatedPrompts
+        : db.prompts.filter((p) => p.status === 'Published' && p.featured).slice(0, 2)
+      ).map((p) => publicPrompt(p, req.user?.sub)),
       relatedArticles,
       previousArticle: idx < published.length - 1 ? published[idx + 1] : null,
       nextArticle: idx > 0 ? published[idx - 1] : null,
@@ -880,7 +892,7 @@ async function startServer() {
     const allTags = Array.from(new Set(publishedAll.flatMap((p) => p.tags)));
 
     return res.json({
-      items: paginated,
+      items: paginated.map((p) => publicPrompt(p, req.user?.sub)),
       categories: PROMPT_CATEGORIES,
       categoryCounts,
       tags: allTags,
@@ -905,7 +917,7 @@ async function startServer() {
     const mergedIds = Array.from(new Set([...idsParam, ...userSaved]));
     const published = db.prompts.filter((p) => p.status === 'Published');
     const items = filterSavedPrompts(published, mergedIds);
-    return res.json({ items, savedPromptIds: mergedIds });
+    return res.json({ items: items.map((p) => publicPrompt(p, req.user?.sub)), savedPromptIds: mergedIds });
   });
 
   app.get('/api/public/prompts/:slug', (req, res) => {
@@ -947,15 +959,140 @@ async function startServer() {
       whatsappUrl: db.settings.whatsappChannelUrl,
       totalPublishedPrompts: portfolio.totalPublishedPrompts,
       totalPublishedBlogs: portfolio.totalPublishedBlogs,
-      otherPrompts: portfolio.otherPrompts,
+      otherPrompts: portfolio.otherPrompts.map((p) => publicPrompt(p, req.user?.sub)),
       otherBlogs: portfolio.otherBlogs,
     };
 
+    const owned = hasPromptPurchase(prompt.id, req.user?.sub);
     return res.json({
-      prompt,
+      prompt: publicPrompt(prompt, req.user?.sub),
+      purchase: { required: Boolean(prompt.isPaid && !owned), owned, amountInPaise: prompt.priceInPaise || 0, currency: 'INR', checkoutEnabled: Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) },
       authorSpotlight,
-      relatedPrompts: fallbackRelated,
+      relatedPrompts: fallbackRelated.map((p) => publicPrompt(p, req.user?.sub)),
     });
+  });
+
+  app.get('/api/public/payments/config', (_req, res) => {
+    const keyId = process.env.RAZORPAY_KEY_ID || '';
+    return res.json({ enabled: Boolean(keyId && process.env.RAZORPAY_KEY_SECRET), keyId: keyId || null, currency: 'INR' });
+  });
+
+  app.post('/api/public/payments/prompt-order', requireAuth, async (req, res) => {
+    const parsed = z.object({ promptId: z.string().min(1) }).safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'Choose a valid prompt.' });
+    const db = getDb();
+    const prompt = db.prompts.find((item) => item.id === parsed.data.promptId && item.status === 'Published' && item.isPaid);
+    if (!prompt || !prompt.priceInPaise || prompt.priceInPaise < 100) {
+      return res.status(404).json({ error: 'This paid prompt is unavailable.' });
+    }
+    if (hasPromptPurchase(prompt.id, req.user!.sub)) return res.status(409).json({ error: 'You already own this prompt.' });
+    const keyId = process.env.RAZORPAY_KEY_ID || '';
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || '';
+    if (!keyId || !keySecret) return res.status(503).json({ error: 'Checkout is not configured yet. Please contact the creator.' });
+    try {
+      const receipt = `prompt_${Date.now()}_${req.user!.sub.slice(-8)}`.slice(0, 40);
+      const response = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString('base64')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: prompt.priceInPaise,
+          currency: 'INR',
+          receipt,
+          notes: { promptId: prompt.id, userId: req.user!.sub },
+        }),
+      });
+      const providerOrder = await response.json() as { id?: string; error?: { description?: string } };
+      if (!response.ok || !providerOrder.id) throw new Error(providerOrder.error?.description || 'Payment provider could not create checkout.');
+      const now = new Date().toISOString();
+      const order: DigitalOrderItem = {
+        id: `ord-${crypto.randomUUID()}`,
+        userId: req.user!.sub,
+        customerName: req.user!.name,
+        customerEmail: req.user!.email,
+        promptId: prompt.id,
+        promptTitle: prompt.title,
+        promptSlug: prompt.slug,
+        amountInPaise: prompt.priceInPaise,
+        currency: 'INR',
+        status: 'created',
+        provider: 'razorpay',
+        providerOrderId: providerOrder.id,
+        createdAt: now,
+        updatedAt: now,
+      };
+      db.orders.unshift(order);
+      saveDatabase();
+      return res.status(201).json({ order, keyId });
+    } catch (err) {
+      return res.status(502).json({ error: err instanceof Error ? err.message : 'Unable to start checkout.' });
+    }
+  });
+
+  app.post('/api/public/payments/verify', requireAuth, async (req, res) => {
+    const parsed = z.object({
+      razorpay_order_id: z.string().min(1),
+      razorpay_payment_id: z.string().min(1),
+      razorpay_signature: z.string().min(1),
+    }).safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'Payment confirmation is incomplete.' });
+    const db = getDb();
+    const order = db.orders.find((item) => item.providerOrderId === parsed.data.razorpay_order_id && item.userId === req.user!.sub);
+    if (!order) return res.status(404).json({ error: 'Order not found for this account.' });
+    if (order.status === 'paid') return res.json({ paid: true, promptSlug: order.promptSlug });
+    const secret = process.env.RAZORPAY_KEY_SECRET || '';
+    if (!secret) return res.status(503).json({ error: 'Payment verification is not configured.' });
+    const expected = crypto.createHmac('sha256', secret).update(`${order.providerOrderId}|${parsed.data.razorpay_payment_id}`).digest();
+    let received: Buffer;
+    try { received = Buffer.from(parsed.data.razorpay_signature, 'hex'); } catch { received = Buffer.alloc(0); }
+    if (received.length !== expected.length || !crypto.timingSafeEqual(received, expected)) {
+      return res.status(400).json({ error: 'Payment signature verification failed.' });
+    }
+    try {
+      const paymentResponse = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(parsed.data.razorpay_payment_id)}`, {
+        headers: { Authorization: `Basic ${Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${secret}`).toString('base64')}` },
+      });
+      const payment = await paymentResponse.json() as { id?: string; order_id?: string; amount?: number; currency?: string; status?: string };
+      if (!paymentResponse.ok || payment.order_id !== order.providerOrderId || payment.amount !== order.amountInPaise || payment.currency !== order.currency) {
+        return res.status(400).json({ error: 'Payment details do not match this order.' });
+      }
+      if (payment.status !== 'captured') return res.status(409).json({ error: 'Payment is awaiting capture confirmation. Refresh your purchase shortly.' });
+      order.status = 'paid';
+      order.providerPaymentId = payment.id || parsed.data.razorpay_payment_id;
+      order.updatedAt = new Date().toISOString();
+      saveDatabase();
+      recordAuditLog({ actorId: req.user!.sub, actorEmail: req.user!.email, action: 'PROMPT_PURCHASE_PAID', targetType: 'Prompt', targetId: order.promptId, details: `Verified payment for ${order.promptTitle}.` });
+      return res.json({ paid: true, promptSlug: order.promptSlug });
+    } catch (err) {
+      return res.status(502).json({ error: err instanceof Error ? err.message : 'Payment status could not be verified.' });
+    }
+  });
+
+  app.post('/api/webhooks/razorpay', (req, res) => {
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || '';
+    const signature = req.get('x-razorpay-signature') || '';
+    const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
+    if (!webhookSecret || !rawBody || !signature) return res.status(503).json({ error: 'Payment webhook is not configured.' });
+    const expected = crypto.createHmac('sha256', webhookSecret).update(rawBody).digest();
+    const received = Buffer.from(signature, 'hex');
+    if (received.length !== expected.length || !crypto.timingSafeEqual(received, expected)) return res.status(401).json({ error: 'Invalid webhook signature.' });
+    const event = String(req.body?.event || '');
+    if (event !== 'payment.captured' && event !== 'order.paid') return res.json({ received: true, ignored: true });
+    const payment = req.body?.payload?.payment?.entity;
+    const db = getDb();
+    const order = db.orders.find((item) => item.providerOrderId === payment?.order_id);
+    if (!order) return res.json({ received: true, matched: false });
+    if (payment.amount !== order.amountInPaise || payment.currency !== order.currency || payment.status !== 'captured') return res.status(400).json({ error: 'Captured payment does not match the order amount.' });
+    if (order.status !== 'paid') {
+      order.status = 'paid';
+      order.providerPaymentId = String(payment.id || '');
+      order.updatedAt = new Date().toISOString();
+      saveDatabase();
+      recordAuditLog({ actorId: 'payment-webhook', actorEmail: 'razorpay-webhook', action: 'PROMPT_PURCHASE_PAID', targetType: 'Prompt', targetId: order.promptId, details: `Razorpay webhook confirmed payment for ${order.promptTitle}.` });
+    }
+    return res.json({ received: true, paid: true });
   });
 
   app.post('/api/public/prompts/:id/copy', (req, res) => {
@@ -1448,6 +1585,8 @@ async function startServer() {
       totalPromptsCount: db.prompts.length,
       newEnquiriesCount: db.enquiries.filter((e) => e.status === 'New').length,
       totalEnquiriesCount: db.enquiries.length,
+      paidOrdersCount: (db.orders || []).filter((order) => order.status === 'paid').length,
+      grossSalesInPaise: (db.orders || []).filter((order) => order.status === 'paid').reduce((sum, order) => sum + order.amountInPaise, 0),
       unreadNotificationsCount: db.notifications.filter((n) => !n.read).length,
       instagram: getInstagramIntegrationSummary(),
       recentEnquiries: db.enquiries.slice(0, 5),
@@ -1455,7 +1594,62 @@ async function startServer() {
     });
   });
 
+  app.get('/api/admin/orders', requireAdmin, (req, res) => {
+    const db = getDb();
+    const status = String(req.query.status || 'All');
+    const search = String(req.query.search || '').toLowerCase().trim();
+    let items = [...(db.orders || [])].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    if (status !== 'All') items = items.filter((order) => order.status === status);
+    if (search) items = items.filter((order) => `${order.customerName} ${order.customerEmail} ${order.promptTitle} ${order.providerPaymentId || ''}`.toLowerCase().includes(search));
+    const paid = (db.orders || []).filter((order) => order.status === 'paid');
+    return res.json({
+      items: items.slice(0, 500),
+      summary: {
+        totalOrders: db.orders?.length || 0,
+        paidOrders: paid.length,
+        pendingOrders: (db.orders || []).filter((order) => order.status === 'created').length,
+        grossSalesInPaise: paid.reduce((sum, order) => sum + order.amountInPaise, 0),
+      },
+    });
+  });
+
+  app.post('/api/admin/orders/:id/refund', requireAdmin, async (req, res) => {
+    const db = getDb();
+    const order = db.orders.find((item) => item.id === req.params.id);
+    if (!order) return res.status(404).json({ error: 'Order not found.' });
+    if (order.status !== 'paid' || !order.providerPaymentId) return res.status(409).json({ error: 'Only captured, paid orders can be refunded.' });
+    const keyId = process.env.RAZORPAY_KEY_ID || '';
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || '';
+    if (!keyId || !keySecret) return res.status(503).json({ error: 'Razorpay credentials are not configured.' });
+    try {
+      const response = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(order.providerPaymentId)}/refund`, {
+        method: 'POST',
+        headers: { Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString('base64')}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: { order_id: order.id, reason: 'Admin initiated full refund' } }),
+      });
+      const refund = await response.json() as { id?: string; error?: { description?: string } };
+      if (!response.ok || !refund.id) return res.status(502).json({ error: refund.error?.description || 'Razorpay could not issue the refund.' });
+      order.status = 'refunded';
+      order.providerRefundId = refund.id;
+      order.updatedAt = new Date().toISOString();
+      saveDatabase();
+      recordAuditLog({ actorId: req.user!.sub, actorEmail: req.user!.email, action: 'PROMPT_ORDER_REFUNDED', targetType: 'Prompt', targetId: order.promptId, details: `Issued a full refund for order ${order.id}.` });
+      return res.json({ order });
+    } catch (err) {
+      return res.status(502).json({ error: err instanceof Error ? err.message : 'Refund request failed.' });
+    }
+  });
+
   // --- Admin User Management ---
+  app.get('/api/admin/users/export/csv', requireAdmin, (_req, res) => {
+    const db = getDb();
+    const csv = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const rows = [['Name', 'Email', 'Role', 'Status', 'Email Verified', 'Registered At'], ...db.users.map((account) => [account.name, account.email, account.role, account.status, account.emailVerified ? 'Yes' : 'No', account.createdAt])];
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="keerthi-users.csv"');
+    return res.send(rows.map((row) => row.map(csv).join(',')).join('\r\n'));
+  });
+
   app.get('/api/admin/users', requireAdmin, (req, res) => {
     const db = getDb();
     const search = String(req.query.search || '').toLowerCase().trim();
@@ -1788,7 +1982,9 @@ async function startServer() {
     authorName: z.string().default('Keerthi_dot_exe'),
     featured: z.boolean().default(false),
     status: z.enum(['Draft', 'Published']).default('Published'),
-  });
+    isPaid: z.boolean().default(false),
+    priceInPaise: z.number().int().min(0).max(100000000).default(0),
+  }).refine((data) => !data.isPaid || data.priceInPaise >= 100, { message: 'Set a price of at least ₹1 for paid prompts.' });
 
   app.post('/api/admin/prompts', requireAdmin, (req, res) => {
     const parsed = promptInputSchema.safeParse(req.body);
@@ -1826,6 +2022,8 @@ async function startServer() {
       featured: d.featured,
       status: d.status,
       copiesCount: 0,
+      isPaid: d.isPaid,
+      priceInPaise: d.isPaid ? d.priceInPaise : 0,
       createdAt: now,
       updatedAt: now,
     };
@@ -1880,6 +2078,8 @@ async function startServer() {
     prompt.authorName = d.authorName;
     prompt.featured = d.featured;
     prompt.status = d.status;
+    prompt.isPaid = d.isPaid;
+    prompt.priceInPaise = d.isPaid ? d.priceInPaise : 0;
     prompt.updatedAt = new Date().toISOString();
 
     saveDatabase();
@@ -2138,7 +2338,7 @@ async function startServer() {
         appId
       )}&redirect_uri=${encodeURIComponent(
         redirectUri
-      )}&response_type=code&scope=instagram_business_basic,instagram_business_manage_messages&state=${state}`;
+      )}&response_type=code&scope=instagram_business_basic&state=${state}`;
       return res.json({ mode: 'oauth_redirect', authUrl, state });
     }
 
@@ -2149,7 +2349,7 @@ async function startServer() {
     });
   });
 
-  app.get('/api/instagram/oauth/callback', requireAdmin, (req, res) => {
+  app.get('/api/instagram/oauth/callback', requireAdmin, async (req, res) => {
     const { code, state } = req.query;
     if (!state || !oauthStates.has(String(state))) {
       return res.status(400).send('Invalid OAuth state parameter.');
@@ -2158,34 +2358,97 @@ async function startServer() {
     if (!code) {
       return res.redirect('/admin?tab=instagram&error=missing_code');
     }
-    const db = getDb();
-    db.instagramAccount.connected = true;
-    db.instagramAccount.mode = 'official_api';
-    db.instagramAccount.encryptedAccessToken = encryptSensitiveToken(`ig_oauth_${code}`);
-    db.instagramAccount.lastSyncedAt = new Date().toISOString();
-    db.instagramAccount.lastSyncError = null;
-    saveDatabase();
-    return res.redirect('/admin?tab=instagram&connected=1');
+    const appId = process.env.INSTAGRAM_APP_ID || '';
+    const appSecret = process.env.INSTAGRAM_APP_SECRET || '';
+    const redirectUri = process.env.INSTAGRAM_REDIRECT_URI || 'http://localhost:3000/api/instagram/oauth/callback';
+    if (!appId || !appSecret) return res.redirect('/admin?tab=instagram&error=missing_meta_credentials');
+    try {
+      const shortResponse = await fetch('https://api.instagram.com/oauth/access_token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: appId,
+          client_secret: appSecret,
+          grant_type: 'authorization_code',
+          redirect_uri: redirectUri,
+          code: String(code),
+        }),
+      });
+      const shortToken = await shortResponse.json() as { access_token?: string; user_id?: number | string; error_message?: string };
+      if (!shortResponse.ok || !shortToken.access_token) throw new Error(shortToken.error_message || 'Instagram authorization code exchange failed.');
+      const longUrl = new URL('https://graph.instagram.com/access_token');
+      longUrl.search = new URLSearchParams({
+        grant_type: 'ig_exchange_token',
+        client_secret: appSecret,
+        access_token: shortToken.access_token,
+      }).toString();
+      const longResponse = await fetch(longUrl);
+      const longToken = await longResponse.json() as { access_token?: string; error?: { message?: string } };
+      if (!longResponse.ok || !longToken.access_token) throw new Error(longToken.error?.message || 'Instagram long-lived token exchange failed.');
+      const profileUrl = new URL('https://graph.instagram.com/me');
+      profileUrl.search = new URLSearchParams({ fields: 'user_id,username,account_type,media_count', access_token: longToken.access_token }).toString();
+      const profileResponse = await fetch(profileUrl);
+      const profile = await profileResponse.json() as { user_id?: string; id?: string; username?: string; account_type?: string; error?: { message?: string } };
+      if (!profileResponse.ok || !profile.username) throw new Error(profile.error?.message || 'Could not read the authorized Instagram profile.');
+      const db = getDb();
+      db.instagramAccount.connected = true;
+      db.instagramAccount.mode = 'official_api';
+      db.instagramAccount.username = profile.username;
+      db.instagramAccount.accountId = String(profile.user_id || profile.id || shortToken.user_id || '');
+      db.instagramAccount.accountType = profile.account_type || 'CREATOR';
+      db.instagramAccount.encryptedAccessToken = encryptSensitiveToken(longToken.access_token);
+      db.instagramAccount.lastSyncedAt = new Date().toISOString();
+      db.instagramAccount.lastSyncError = null;
+      saveDatabase();
+      return res.redirect('/admin?tab=instagram&connected=1');
+    } catch (err) {
+      const db = getDb();
+      db.instagramAccount.lastSyncError = err instanceof Error ? err.message : 'Instagram authorization failed.';
+      saveDatabase();
+      return res.redirect('/admin?tab=instagram&error=oauth_failed');
+    }
   });
 
-  app.post('/api/admin/instagram/sync', requireAdmin, (_req, res) => {
+  app.post('/api/admin/instagram/sync', requireAdmin, async (_req, res) => {
     const db = getDb();
-    const incomingBatch = [
-      {
-        id: `ig-sync-${Date.now()}`,
-        externalMediaId: '17984510293847101',
-        mediaType: 'REELS' as const,
-        mediaUrl: '/assets/media/keerthi-hero.png',
-        thumbnailUrl: '/assets/media/keerthi-hero.png',
-        caption:
-          '3 glassmorphism prompt secrets that transform ordinary portraits into studio art ✨ Copy the exact prompt from our library! #keerthi_dot_exe #aiprompts #midjourney',
-        permalink: 'https://www.instagram.com/keerthi_dot_exe/',
-        timestamp: '2026-10-18T14:30:00.000Z',
-        featured: true,
+    if (!db.instagramAccount.connected || !db.instagramAccount.encryptedAccessToken) {
+      return res.status(409).json({ error: 'Connect an Instagram professional account before syncing its posts.' });
+    }
+    let accessToken: string;
+    try {
+      accessToken = decryptSensitiveToken(db.instagramAccount.encryptedAccessToken);
+    } catch {
+      return res.status(401).json({ error: 'Instagram session is no longer valid. Disconnect and connect the account again.' });
+    }
+    const mediaUrl = new URL('https://graph.instagram.com/me/media');
+    mediaUrl.search = new URLSearchParams({
+      fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp',
+      limit: '30',
+      access_token: accessToken,
+    }).toString();
+    let incomingBatch: InstagramMediaItem[] = [];
+    try {
+      const mediaResponse = await fetch(mediaUrl);
+      const payload = await mediaResponse.json() as { data?: Array<{ id: string; caption?: string; media_type?: string; media_url?: string; thumbnail_url?: string; permalink?: string; timestamp?: string }>; error?: { message?: string } };
+      if (!mediaResponse.ok || !payload.data) throw new Error(payload.error?.message || 'Instagram media could not be loaded.');
+      incomingBatch = payload.data.filter((item) => item.id && (item.media_url || item.thumbnail_url)).map((item) => ({
+        id: `ig-${item.id}`,
+        externalMediaId: item.id,
+        mediaType: (item.media_type === 'CAROUSEL_ALBUM' ? 'CAROUSEL_ALBUM' : item.media_type === 'VIDEO' ? 'VIDEO' : 'IMAGE') as 'IMAGE' | 'VIDEO' | 'CAROUSEL_ALBUM',
+        mediaUrl: item.media_url || item.thumbnail_url || '',
+        thumbnailUrl: item.thumbnail_url || item.media_url || '',
+        caption: item.caption || '',
+        permalink: item.permalink || `https://www.instagram.com/${db.instagramAccount.username}/`,
+        timestamp: item.timestamp || new Date().toISOString(),
+        featured: false,
         visible: true,
-        source: db.instagramAccount.connected ? ('official_api' as const) : ('approved_embed' as const),
-      },
-    ];
+        source: 'official_api' as const,
+      }));
+    } catch (err) {
+      db.instagramAccount.lastSyncError = err instanceof Error ? err.message : 'Instagram media sync failed.';
+      saveDatabase();
+      return res.status(502).json({ error: db.instagramAccount.lastSyncError });
+    }
 
     const { merged, addedCount, updatedCount } = deduplicateInstagramMedia(
       db.instagramMedia,

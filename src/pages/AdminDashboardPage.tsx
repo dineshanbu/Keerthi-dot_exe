@@ -29,6 +29,8 @@ import {
   Quote,
   Code,
   Send,
+  ShoppingBag,
+  BadgeIndianRupee,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import {
@@ -45,6 +47,7 @@ import {
   type AuditLogItem,
   type PublicationStatus,
   type EnquiryStatus,
+  type DigitalOrderItem,
 } from '../shared/types';
 import {
   GlassCard,
@@ -61,6 +64,7 @@ type AdminTab =
   | 'users'
   | 'blogs'
   | 'prompts'
+  | 'sales'
   | 'taxonomy'
   | 'enquiries'
   | 'notifications'
@@ -111,6 +115,12 @@ export const AdminDashboardPage: React.FC = () => {
   const [categoriesList, setCategoriesList] = useState<CategoryItem[]>([]);
   const [tagsList, setTagsList] = useState<TagItem[]>([]);
   const [enquiriesList, setEnquiriesList] = useState<EnquiryItem[]>([]);
+  const [enquirySearch, setEnquirySearch] = useState('');
+  const [enquiryStatusFilter, setEnquiryStatusFilter] = useState('All');
+  const [ordersList, setOrdersList] = useState<DigitalOrderItem[]>([]);
+  const [ordersSummary, setOrdersSummary] = useState({ totalOrders: 0, paidOrders: 0, pendingOrders: 0, grossSalesInPaise: 0 });
+  const [orderSearch, setOrderSearch] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState('All');
   const [igState, setIgState] = useState<InstagramIntegrationState | null>(null);
   const [igMedia, setIgMedia] = useState<InstagramMediaItem[]>([]);
   const [mediaAssets, setMediaAssets] = useState<MediaAssetItem[]>([]);
@@ -149,6 +159,8 @@ export const AdminDashboardPage: React.FC = () => {
   const [prmTags, setPrmTags] = useState('Midjourney, Portrait, Studio');
   const [prmFeatured, setPrmFeatured] = useState(true);
   const [prmStatus, setPrmStatus] = useState<'Published' | 'Draft'>('Published');
+  const [prmIsPaid, setPrmIsPaid] = useState(false);
+  const [prmPriceRupees, setPrmPriceRupees] = useState('');
 
   // Enquiry Detail & Reply Modal
   const [selectedEnquiry, setSelectedEnquiry] = useState<EnquiryItem | null>(null);
@@ -200,7 +212,7 @@ export const AdminDashboardPage: React.FC = () => {
   const loadAllAdminData = useCallback(async () => {
     if (!user || user.role !== 'Admin') return;
     try {
-      const [sumRes, usrRes, blgRes, prmRes, taxRes, enqRes, igRes, medRes, audRes, dbRes] =
+      const [sumRes, usrRes, blgRes, prmRes, taxRes, enqRes, igRes, medRes, audRes, dbRes, ordRes] =
         await Promise.all([
           fetch('/api/admin/summary', { credentials: 'include' }),
           fetch(`/api/admin/users?search=${encodeURIComponent(userSearch)}`, {
@@ -211,11 +223,12 @@ export const AdminDashboardPage: React.FC = () => {
           }),
           fetch('/api/admin/prompts', { credentials: 'include' }),
           fetch('/api/admin/taxonomy', { credentials: 'include' }),
-          fetch('/api/admin/enquiries', { credentials: 'include' }),
+          fetch(`/api/admin/enquiries?status=${encodeURIComponent(enquiryStatusFilter)}&search=${encodeURIComponent(enquirySearch)}`, { credentials: 'include' }),
           fetch('/api/admin/instagram', { credentials: 'include' }),
           fetch('/api/admin/media', { credentials: 'include' }),
           fetch('/api/admin/audit-logs', { credentials: 'include' }),
           fetch('/api/admin/database-status', { credentials: 'include' }),
+          fetch(`/api/admin/orders?status=${encodeURIComponent(orderStatusFilter)}&search=${encodeURIComponent(orderSearch)}`, { credentials: 'include' }),
         ]);
 
       if (sumRes.ok) setSummary(await sumRes.json());
@@ -236,10 +249,15 @@ export const AdminDashboardPage: React.FC = () => {
       if (medRes.ok) setMediaAssets((await medRes.json()).items || []);
       if (audRes.ok) setAuditLogs((await audRes.json()).items || []);
       if (dbRes.ok) setDbSummary(await dbRes.json());
+      if (ordRes.ok) {
+        const data = await ordRes.json();
+        setOrdersList(data.items || []);
+        setOrdersSummary(data.summary || { totalOrders: 0, paidOrders: 0, pendingOrders: 0, grossSalesInPaise: 0 });
+      }
     } catch (err) {
       console.error('Failed to load admin data:', err);
     }
-  }, [user, userSearch, blogStatusFilter]);
+  }, [user, userSearch, blogStatusFilter, enquirySearch, enquiryStatusFilter, orderSearch, orderStatusFilter]);
 
   useEffect(() => {
     loadAllAdminData();
@@ -409,6 +427,8 @@ export const AdminDashboardPage: React.FC = () => {
     setPrmTags('Midjourney, Studio, AI Art');
     setPrmFeatured(true);
     setPrmStatus('Published');
+    setPrmIsPaid(false);
+    setPrmPriceRupees('');
     setPromptModalOpen(true);
   };
 
@@ -426,6 +446,8 @@ export const AdminDashboardPage: React.FC = () => {
     setPrmTags(p.tags.join(', '));
     setPrmFeatured(p.featured);
     setPrmStatus(p.status);
+    setPrmIsPaid(Boolean(p.isPaid));
+    setPrmPriceRupees(p.isPaid ? ((p.priceInPaise || 0) / 100).toFixed(2) : '');
     setPromptModalOpen(true);
   };
 
@@ -449,6 +471,8 @@ export const AdminDashboardPage: React.FC = () => {
       authorName: user.name,
       featured: prmFeatured,
       status: prmStatus,
+      isPaid: prmIsPaid,
+      priceInPaise: prmIsPaid ? Math.round(Number(prmPriceRupees || 0) * 100) : 0,
     };
 
     const url = editingPromptId ? `/api/admin/prompts/${editingPromptId}` : '/api/admin/prompts';
@@ -483,6 +507,7 @@ export const AdminDashboardPage: React.FC = () => {
     { id: 'users', label: 'User Management', icon: Users },
     { id: 'blogs', label: 'Blog CMS', icon: FileText },
     { id: 'prompts', label: 'Prompt Library', icon: Sparkles },
+    { id: 'sales', label: 'Prompt Sales', icon: ShoppingBag, badge: ordersSummary.pendingOrders },
     { id: 'taxonomy', label: 'Categories & Tags', icon: Tags },
     { id: 'enquiries', label: 'Enquiries', icon: Mail, badge: summary?.newEnquiriesCount },
     { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadCount },
@@ -493,7 +518,7 @@ export const AdminDashboardPage: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="admin-dashboard-page max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* ================================================================
             ADMIN SIDEBAR
@@ -706,6 +731,7 @@ export const AdminDashboardPage: React.FC = () => {
                     Search accounts, manage statuses and roles. Sensitive password hashes and tokens are never exposed.
                   </p>
                 </div>
+                <a href="/api/admin/users/export/csv" download="keerthi-users.csv" className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700"><Download className="h-3.5 w-3.5" />Export contacts</a>
                 <div className="relative w-full sm:w-64">
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
@@ -791,6 +817,7 @@ export const AdminDashboardPage: React.FC = () => {
                           {new Date(u.createdAt).toLocaleDateString()}
                         </td>
                         <td className="py-3 px-3 text-right">
+                          <a href={`mailto:${u.email}`} aria-label={`Email ${u.name}`} className="mr-2 inline-flex rounded-lg p-1.5 text-indigo-600 hover:bg-indigo-50"><Mail className="h-4 w-4" /></a>
                           {u.id !== user.id && (
                             <button
                               type="button"
@@ -973,6 +1000,8 @@ export const AdminDashboardPage: React.FC = () => {
                         <span>{prm.recommendedModel}</span>
                         <span aria-hidden="true">·</span>
                         <span className="font-mono tabular-nums">{prm.copiesCount} copies</span>
+                        <span aria-hidden="true">·</span>
+                        <span className={prm.isPaid ? 'font-bold text-emerald-700' : 'text-slate-500'}>{prm.isPaid ? `₹${((prm.priceInPaise || 0) / 100).toFixed(2)}` : 'Free'}</span>
                       </div>
                       <h3 className="text-sm font-bold text-slate-900 font-display">{prm.title}</h3>
                     </div>
@@ -1012,6 +1041,37 @@ export const AdminDashboardPage: React.FC = () => {
                   </div>
                 ))}
               </div>
+            </GlassCard>
+          )}
+
+          {activeTab === 'sales' && (
+            <GlassCard className="p-5 sm:p-6 space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-extrabold text-slate-900 font-display">Prompt Sales & Orders</h2>
+                  <p className="text-xs text-slate-600">Verified Razorpay payments, customers, purchased prompts, and order history.</p>
+                </div>
+                <a href="https://dashboard.razorpay.com/app/payments" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700">
+                  <ExternalLink className="w-3.5 h-3.5" /> Razorpay Dashboard
+                </a>
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { label: 'Gross sales', value: `₹${(ordersSummary.grossSalesInPaise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, Icon: BadgeIndianRupee },
+                  { label: 'Paid orders', value: ordersSummary.paidOrders, Icon: CheckCircle2 },
+                  { label: 'Awaiting payment', value: ordersSummary.pendingOrders, Icon: RefreshCw },
+                  { label: 'All orders', value: ordersSummary.totalOrders, Icon: ShoppingBag },
+                ].map(({ label, value, Icon: MetricIcon }) => {
+                  return <div key={label} className="rounded-2xl border border-white bg-white/75 p-4 shadow-sm"><MetricIcon className="mb-2 h-4 w-4 text-indigo-600" /><p className="text-[11px] text-slate-500">{label}</p><strong className="text-lg font-extrabold text-slate-900">{value}</strong></div>;
+                })}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input value={orderSearch} onChange={(event) => setOrderSearch(event.target.value)} placeholder="Search customer, prompt, payment ID..." className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs" />
+                <select value={orderStatusFilter} onChange={(event) => setOrderStatusFilter(event.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs"><option>All</option><option value="paid">Paid</option><option value="created">Pending</option><option value="failed">Failed</option><option value="refunded">Refunded</option></select>
+              </div>
+              {ordersList.length === 0 ? <div className="rounded-2xl border border-dashed border-slate-300 bg-white/50 p-8 text-center text-sm text-slate-500">No orders match these filters yet. Set a prompt price, then customers can purchase it through checkout.</div> : (
+                <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/75"><table className="w-full min-w-[720px] text-left text-xs"><thead className="bg-slate-50/80 text-slate-500"><tr><th className="p-3">Customer</th><th className="p-3">Prompt</th><th className="p-3">Amount</th><th className="p-3">Payment</th><th className="p-3">Date</th></tr></thead><tbody className="divide-y divide-slate-100">{ordersList.map((order) => <tr key={order.id}><td className="p-3"><strong className="block text-slate-800">{order.customerName}</strong><a className="text-indigo-600 hover:underline" href={`mailto:${order.customerEmail}`}>{order.customerEmail}</a></td><td className="p-3"><Link className="font-semibold text-slate-800 hover:text-indigo-600" to={`/prompts/${order.promptSlug}`}>{order.promptTitle}</Link><small className="block text-slate-400">{order.id}</small></td><td className="p-3 font-bold text-slate-800">₹{(order.amountInPaise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td><td className="p-3"><span className={`rounded-full px-2.5 py-1 font-bold capitalize ${order.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : order.status === 'created' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>{order.status}</span>{order.providerPaymentId && <small className="mt-1 block text-slate-400">{order.providerPaymentId}</small>}{order.status === 'paid' && <button type="button" className="mt-2 block rounded-lg border border-rose-200 px-2.5 py-1 text-[10px] font-bold text-rose-700 hover:bg-rose-50" onClick={() => setConfirmState({ open: true, title: 'Issue full refund?', message: `This sends a full ₹${(order.amountInPaise / 100).toFixed(2)} refund for ${order.customerName}'s purchase to Razorpay. This refund cannot be cancelled.`, onConfirm: async () => { setConfirmState((state) => ({ ...state, open: false })); const response = await fetch(`/api/admin/orders/${order.id}/refund`, { method: 'POST', credentials: 'include' }); const data = await response.json(); if (!response.ok) { showToast({ type: 'error', title: 'Refund failed', description: data.error }); return; } showToast({ type: 'success', title: 'Refund issued', description: 'Razorpay accepted the full refund request.' }); await loadAllAdminData(); } })}>Issue full refund</button>}</td><td className="p-3 text-slate-500">{new Date(order.createdAt).toLocaleString()}</td></tr>)}</tbody></table></div>
+              )}
             </GlassCard>
           )}
 
@@ -1158,6 +1218,11 @@ export const AdminDashboardPage: React.FC = () => {
                 </a>
               </div>
 
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input type="search" value={enquirySearch} onChange={(event) => setEnquirySearch(event.target.value)} placeholder="Search name, email, subject..." className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs" />
+                <select value={enquiryStatusFilter} onChange={(event) => setEnquiryStatusFilter(event.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs"><option>All</option><option>New</option><option>In Progress</option><option>Replied</option><option>Closed</option><option>Archived</option></select>
+              </div>
+
               <div className="divide-y divide-slate-200/70">
                 {enquiriesList.map((enq) => (
                   <div key={enq.id} className="py-4 space-y-2">
@@ -1171,6 +1236,7 @@ export const AdminDashboardPage: React.FC = () => {
                           From: {enq.name} ({enq.email}) {enq.phone ? `· ${enq.phone}` : ''} · Service:{' '}
                           <strong>{enq.serviceCategory}</strong>
                         </p>
+                        <div className="mt-1 flex gap-3 text-[11px] font-semibold"><a href={`mailto:${enq.email}`} className="text-indigo-600 hover:underline">Email customer</a>{enq.phone && <a href={`tel:${enq.phone}`} className="text-indigo-600 hover:underline">Call customer</a>}</div>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -1991,6 +2057,14 @@ export const AdminDashboardPage: React.FC = () => {
               value={prmTags}
               onChange={(e) => setPrmTags(e.target.value)}
             />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_220px] items-end gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
+            <label className="flex items-start gap-2 text-xs font-semibold text-slate-800">
+              <input type="checkbox" checked={prmIsPaid} onChange={(event) => setPrmIsPaid(event.target.checked)} className="mt-0.5 accent-indigo-600" />
+              <span>Sell this prompt as a paid digital product <small className="block mt-1 font-normal text-slate-500">The full prompt is hidden until a verified payment is received.</small></span>
+            </label>
+            {prmIsPaid && <label className="text-xs font-semibold text-slate-700">Price (INR)<input type="number" min="1" step="0.01" required={prmIsPaid} value={prmPriceRupees} onChange={(event) => setPrmPriceRupees(event.target.value)} placeholder="e.g. 199" className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm" /></label>}
           </div>
 
           <div className="flex items-center justify-between pt-3 border-t border-slate-100">

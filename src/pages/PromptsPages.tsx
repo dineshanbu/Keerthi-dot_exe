@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Search,
   Copy,
@@ -16,6 +16,8 @@ import {
   X,
   Heart,
   Bookmark,
+  LockKeyhole,
+  ShoppingBag,
 } from 'lucide-react';
 import { PROMPT_CATEGORIES, PRIMARY_PROMPT_FILTERS, type PromptItem, type AuthorSpotlightData } from '../shared/types';
 import {
@@ -30,6 +32,16 @@ import {
   CommentSection,
 } from '../components/ui/GlassComponents';
 import { useApp } from '../context/AppContext';
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: {
+      key: string; amount: number; currency: string; name: string; description: string; order_id: string;
+      prefill: { name?: string; email?: string }; theme: { color: string };
+      handler: (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => void;
+    }) => { open: () => void; on: (event: string, callback: (event: { error?: { description?: string } }) => void) => void };
+  }
+}
 
 type PromptSortOption = 'popular' | 'newest' | 'alphabetical' | 'category';
 
@@ -241,7 +253,7 @@ export const PromptsDirectoryPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          <div className="prompt-category-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
             {PRIMARY_PROMPT_FILTERS.map((filterKey) => {
               const meta = PRIMARY_FILTER_META[filterKey];
               const IconComponent = meta.icon;
@@ -257,7 +269,7 @@ export const PromptsDirectoryPage: React.FC = () => {
                   type="button"
                   onClick={() => handleCategoryChange(filterKey)}
                   aria-pressed={isSelected}
-                  className={`flex items-center justify-between gap-2.5 p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    className={`prompt-category-option flex items-center justify-between gap-2.5 p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] text-white border-purple-500 shadow-md shadow-purple-500/20'
                       : 'bg-white/85 hover:bg-white text-slate-800 border-slate-200/80 hover:border-purple-300'
@@ -300,7 +312,7 @@ export const PromptsDirectoryPage: React.FC = () => {
 
           {/* Specialized Sub-Categories Row */}
           <div className="pt-2">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1.5">
+            <div className="prompt-specialized-list flex items-center gap-2 overflow-x-auto pb-1.5">
               <span className="text-[11px] font-semibold text-slate-500 shrink-0 mr-1">
                 Specialized:
               </span>
@@ -432,13 +444,16 @@ export const PromptsDirectoryPage: React.FC = () => {
 
 export const PromptDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { showToast, isPromptSaved, toggleSavePrompt } = useApp();
+  const { showToast, isPromptSaved, toggleSavePrompt, user } = useApp();
+  const navigate = useNavigate();
   const [prompt, setPrompt] = useState<PromptItem | null>(null);
   const [authorSpotlight, setAuthorSpotlight] = useState<AuthorSpotlightData | null>(null);
   const [related, setRelated] = useState<PromptItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [purchase, setPurchase] = useState<{ required: boolean; owned: boolean; amountInPaise: number; currency: string; checkoutEnabled?: boolean } | null>(null);
+  const [isPaying, setIsPaying] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -449,6 +464,7 @@ export const PromptDetailPage: React.FC = () => {
         if (!res.ok) throw new Error('Not found');
         const data = await res.json();
         setPrompt(data.prompt);
+        setPurchase(data.purchase || null);
         setAuthorSpotlight(data.authorSpotlight || null);
         setRelated(data.relatedPrompts || []);
         document.title = `${data.prompt.title} — AI Prompt | Keerthi_dot_exe`;
@@ -460,6 +476,73 @@ export const PromptDetailPage: React.FC = () => {
     }
     load();
   }, [slug]);
+
+  const handlePurchase = async () => {
+    if (!prompt || !purchase || purchase.owned || isPaying) return;
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent(`/prompts/${prompt.slug}`)}`);
+      return;
+    }
+    setIsPaying(true);
+    try {
+      const configResponse = await fetch('/api/public/payments/config');
+      const config = await configResponse.json();
+      if (!config.enabled || !config.keyId) throw new Error('Checkout setup is pending. Please contact the creator.');
+      if (!window.Razorpay) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Payment checkout could not load.'));
+          document.body.appendChild(script);
+        });
+      }
+      const orderResponse = await fetch('/api/public/payments/prompt-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ promptId: prompt.id }),
+      });
+      const orderData = await orderResponse.json();
+      if (!orderResponse.ok) throw new Error(orderData.error || 'Could not start payment.');
+      const RazorpayCheckout = window.Razorpay;
+      if (!RazorpayCheckout) throw new Error('Payment checkout did not load. Please refresh and try again.');
+      const checkout = new RazorpayCheckout({
+        key: orderData.keyId,
+        amount: orderData.order.amountInPaise,
+        currency: 'INR',
+        name: 'Keerthi_dot_exe',
+        description: prompt.title,
+        order_id: orderData.order.providerOrderId,
+        prefill: { name: user.name, email: user.email },
+        theme: { color: '#6658e8' },
+        handler: (response) => {
+          void (async () => {
+            try {
+              const verifyResponse = await fetch('/api/public/payments/verify', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(response),
+              });
+              const verified = await verifyResponse.json();
+              if (!verifyResponse.ok || !verified.paid) throw new Error(verified.error || 'Payment confirmation is pending.');
+              const promptResponse = await fetch(`/api/public/prompts/${prompt.slug}`, { credentials: 'include' });
+              const promptData = await promptResponse.json();
+              setPrompt(promptData.prompt);
+              setPurchase(promptData.purchase);
+              showToast({ type: 'success', title: 'Purchase complete', description: 'Your prompt is now unlocked on this account.' });
+            } catch (error) {
+              showToast({ type: 'error', title: 'Payment verification pending', description: error instanceof Error ? error.message : 'Refresh this page shortly to check access.' });
+            }
+          })();
+        },
+      });
+      checkout.on('payment.failed', (event) => showToast({ type: 'error', title: 'Payment not completed', description: event.error?.description || 'Please try again.' }));
+      checkout.open();
+    } catch (error) {
+      showToast({ type: 'error', title: 'Checkout unavailable', description: error instanceof Error ? error.message : 'Please try again later.' });
+    } finally {
+      setIsPaying(false);
+    }
+  };
 
   const handleCopyPrompt = async () => {
     if (!prompt) return;
@@ -498,7 +581,7 @@ export const PromptDetailPage: React.FC = () => {
   const saved = isPromptSaved(prompt.id);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+    <div className="prompt-detail-page max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       <div className="flex items-center justify-between">
         <Link
           to="/prompts"
@@ -514,108 +597,67 @@ export const PromptDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <GlassCard className="p-6 sm:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Preview Image */}
-          <div className="lg:col-span-5">
-            <div className="rounded-2xl overflow-hidden bg-slate-900 border border-white shadow-lg h-72 sm:h-88">
-              <SmartImage
-                src={prompt.previewImage}
-                alt={prompt.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="mt-4 flex items-center justify-between text-xs text-slate-600 px-1">
-              <span>Author: <strong className="text-slate-900">{prompt.authorName}</strong></span>
-              <span className="font-mono tabular-nums">{prompt.copiesCount.toLocaleString()} copies</span>
-            </div>
+      <GlassCard className="prompt-detail-card p-4 sm:p-7 lg:p-8">
+        <header className="prompt-detail-heading">
+          <div className="prompt-detail-eyebrow-row">
+            <div className="prompt-detail-eyebrow"><Sparkles className="w-4 h-4" /><span>{prompt.category}</span><span className="prompt-detail-dot" /><span>{prompt.language}</span></div>
+            <button type="button" onClick={() => toggleSavePrompt(prompt)} aria-pressed={saved}
+              className={`prompt-save-button inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-all cursor-pointer ${saved ? 'bg-rose-500 text-white border-rose-500 shadow-xs' : 'bg-white/85 hover:bg-rose-50 text-slate-700 hover:text-rose-600 border-white'}`}>
+              <Bookmark className={`w-3.5 h-3.5 ${saved ? 'fill-current' : ''}`} />
+              <span>{saved ? 'Saved' : 'Save prompt'}</span>
+            </button>
           </div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 font-display leading-tight tracking-tight">{prompt.title}</h1>
+          <p className="prompt-detail-description text-sm sm:text-base text-slate-600 leading-relaxed">{prompt.shortDescription}</p>
+          <div className="prompt-model-pill"><span>Recommended model</span><strong>{prompt.recommendedModel}</strong>{prompt.isPaid && <strong className="ml-auto rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">₹{((purchase?.amountInPaise || prompt.priceInPaise || 0) / 100).toLocaleString('en-IN')}</strong>}</div>
+        </header>
 
-          {/* Prompt Details & Copy Block */}
-          <div className="lg:col-span-7 flex flex-col justify-between space-y-5">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="flex items-center gap-2 text-xs text-purple-700 font-semibold">
-                  <Sparkles className="w-4 h-4" />
-                  <span>{prompt.category}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>Recommended: {prompt.recommendedModel}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => toggleSavePrompt(prompt)}
-                  aria-pressed={saved}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                    saved
-                      ? 'bg-rose-500 text-white border-rose-500 shadow-xs'
-                      : 'bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-600 border-slate-200'
-                  }`}
-                >
-                  <Bookmark className={`w-3.5 h-3.5 ${saved ? 'fill-current' : ''}`} />
-                  <span>{saved ? 'Saved in Library' : 'Save to Library'}</span>
+        <div className="prompt-detail-content">
+          <aside className="prompt-preview-column">
+            <div className="prompt-preview-image rounded-2xl overflow-hidden bg-slate-900 border border-white shadow-lg">
+              <SmartImage src={prompt.previewImage} alt={prompt.title} className="w-full h-full object-cover" />
+              <span className="prompt-preview-caption"><Sparkles className="w-3.5 h-3.5" /> Preview</span>
+            </div>
+            <div className="prompt-author-meta">
+              <span>Created by <strong>{prompt.authorName}</strong></span>
+              <span className="prompt-copy-count">{prompt.copiesCount.toLocaleString()} copies</span>
+            </div>
+            {prompt.tags.length > 0 && <div className="prompt-tag-list">{prompt.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>}
+          </aside>
+
+          <div className="prompt-detail-main">
+            {purchase?.required ? (
+              <div className="rounded-3xl border border-white/90 bg-gradient-to-br from-white/95 via-indigo-50/90 to-cyan-50/85 p-6 sm:p-8 text-center shadow-lg">
+                <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-indigo-100 text-indigo-700"><LockKeyhole className="h-7 w-7" /></div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-indigo-600">Creator prompt · one-time purchase</p>
+                <h2 className="mt-2 text-xl font-extrabold text-slate-900">Unlock the complete prompt</h2>
+                <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-600">Get the full copy-ready prompt and keep access in your account after checkout.</p>
+                <button type="button" onClick={handlePurchase} disabled={isPaying || purchase.checkoutEnabled === false} className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-60">
+                  <ShoppingBag className="h-4 w-4" />{isPaying ? 'Preparing secure checkout…' : `Unlock for ₹${(purchase.amountInPaise / 100).toLocaleString('en-IN')}`}
+                </button>
+                {!purchase.checkoutEnabled && <p className="mt-3 text-[11px] text-slate-500">Checkout setup is pending. Please contact the creator.</p>}
+                {!user && <p className="mt-2 text-[11px] text-slate-500">Sign in or create a free account to complete your purchase.</p>}
+              </div>
+            ) : <div className="prompt-code-panel rounded-2xl bg-[#0F172A] text-slate-100 p-4 sm:p-5 border border-slate-800 shadow-inner">
+              <div className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-700/80">
+                <div className="prompt-code-label"><span className="prompt-code-indicator" /><span>Ready-to-use prompt</span></div>
+                <button type="button" onClick={handleCopyPrompt}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer shrink-0 ${copied ? 'bg-emerald-500 text-white' : 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-md shadow-indigo-950/30'}`}>
+                  {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copied!' : 'Copy prompt'}</span>
                 </button>
               </div>
+              <pre className="prompt-code-text font-mono text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words text-slate-100 select-all">{prompt.promptText}</pre>
+            </div>}
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display leading-tight">
-                {prompt.title}
-              </h1>
+            {prompt.usageInstructions && <div className="prompt-usage-note p-4 rounded-xl bg-purple-50/70 border border-purple-200/60">
+              <h2 className="text-xs font-bold text-purple-950 uppercase tracking-wider mb-1">How to use this prompt</h2>
+              <p className="text-xs text-slate-700 leading-relaxed">{prompt.usageInstructions}</p>
+            </div>}
 
-              <p className="text-sm text-slate-600 leading-relaxed">{prompt.shortDescription}</p>
-
-              {/* Exact Authored Prompt Box */}
-              <div className="rounded-2xl bg-[#0F172A] text-slate-100 p-5 border border-slate-800 shadow-inner">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-purple-300">
-                    Exact Prompt Text
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleCopyPrompt}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                      copied
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-purple-600 hover:bg-purple-500 text-white'
-                    }`}
-                  >
-                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copied ? 'Copied to Clipboard!' : 'Copy Prompt'}</span>
-                  </button>
-                </div>
-                <pre className="font-mono text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words text-slate-100 select-all">
-                  {prompt.promptText}
-                </pre>
-              </div>
-
-              {prompt.usageInstructions && (
-                <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200/60">
-                  <h2 className="text-xs font-bold text-purple-950 uppercase tracking-wider mb-1">
-                    Usage Instructions & Tips
-                  </h2>
-                  <p className="text-xs text-slate-700 leading-relaxed">
-                    {prompt.usageInstructions}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="pt-4 border-t border-slate-200/70 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <span>Tags:</span>
-                <span>{prompt.tags.join(' · ')}</span>
-              </div>
-
-              {prompt.externalToolUrl && (
-                <a
-                  href={prompt.externalToolUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors"
-                >
-                  <span>Open {prompt.recommendedModel.split('/')[0]}</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              )}
-            </div>
+            {prompt.externalToolUrl && <a href={prompt.externalToolUrl} target="_blank" rel="noopener noreferrer" className="prompt-tool-link inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors">
+              <span>Open {prompt.recommendedModel.split('/')[0]}</span><ExternalLink className="w-3.5 h-3.5" />
+            </a>}
           </div>
         </div>
       </GlassCard>

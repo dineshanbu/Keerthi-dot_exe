@@ -16,6 +16,7 @@ import type {
   WebsiteSettings,
   MediaAssetItem,
   AuditLogItem,
+  DigitalOrderItem,
 } from '../../src/shared/types.ts';
 import { hashPassword, encryptSensitiveToken } from '../utils/security.ts';
 import { calculateReadingMetrics } from '../../src/utils/platformLogic.ts';
@@ -52,6 +53,7 @@ export interface DatabaseState {
   instagramMedia: InstagramMediaItem[];
   mediaAssets: MediaAssetItem[];
   auditLogs: AuditLogItem[];
+  orders: DigitalOrderItem[];
 }
 
 const DATA_DIR = path.resolve(process.cwd(), '.aistudio');
@@ -128,9 +130,39 @@ async function hydrateOrSyncMongoCollections(): Promise<void> {
       if (!Array.isArray(dbState.comments)) {
         dbState.comments = createInitialComments();
       }
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-      fs.writeFileSync(DB_FILE, JSON.stringify(dbState, null, 2), 'utf8');
+      if (!Array.isArray(dbState.orders)) dbState.orders = [];
+    } else {
+      // When connecting an existing Atlas database for the first time, hydrate
+      // from its collections before writing the local seed snapshot. This avoids
+      // replacing a populated database with preview data.
+      const collectionModels: Array<[keyof Pick<DatabaseState, 'users' | 'blogs' | 'prompts' | 'comments' | 'categories' | 'tags' | 'enquiries' | 'notifications' | 'mediaAssets' | 'auditLogs' | 'instagramMedia' | 'orders'>, mongoose.Model<any>]> = [
+        ['users', Models.User], ['blogs', Models.BlogPost], ['prompts', Models.Prompt],
+        ['comments', Models.Comment], ['categories', Models.Category], ['tags', Models.Tag],
+        ['enquiries', Models.Enquiry], ['notifications', Models.Notification],
+        ['mediaAssets', Models.MediaAsset], ['auditLogs', Models.AuditLog], ['instagramMedia', Models.InstagramMedia],
+        ['orders', Models.DigitalOrder],
+      ];
+      for (const [key, model] of collectionModels) {
+        const documents = await model.find().lean();
+        if (documents.length) {
+          (dbState[key] as unknown[]) = documents.map(({ _id, __v, ...doc }: any) => doc);
+        }
+      }
+      const remoteSettings = await Models.WebsiteSettings.findOne().lean();
+      if (remoteSettings) {
+        const { _id, __v, ...settings } = remoteSettings as any;
+        dbState.settings = { ...dbState.settings, ...settings };
+      }
+      const remoteInstagram = await Models.InstagramAccount.findOne().lean();
+      if (remoteInstagram) {
+        const { _id, __v, ...account } = remoteInstagram as any;
+        dbState.instagramAccount = { ...dbState.instagramAccount, ...account };
+      }
+      if (!dbState.comments?.length) dbState.comments = createInitialComments();
     }
+    migrateSeedBlogContent(dbState.blogs);
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(DB_FILE, JSON.stringify(dbState, null, 2), 'utf8');
     await syncStateToMongoCollections();
   } catch (err) {
     console.error('[Database] MongoDB hydration error:', err);
@@ -168,6 +200,9 @@ async function syncStateToMongoCollections(): Promise<void> {
       ),
       ...dbState.tags.map((t) =>
         Models.Tag.updateOne({ slug: t.slug }, { $set: { ...t } }, { upsert: true })
+      ),
+      ...(dbState.orders || []).map((order) =>
+        Models.DigitalOrder.updateOne({ id: order.id }, { $set: { ...order } }, { upsert: true })
       ),
     ]);
 
@@ -681,17 +716,51 @@ function createInitialBlogs(): BlogPost[] {
       relatedPromptSlugs: ['translucent-pearl-glass-portrait-lighting', 'futuristic-bionic-ai-assistant-editorial-cover'],
       relatedBlogSlugs: ['how-to-create-viral-whatsapp-status-with-ai', 'complete-guide-to-comfyui-for-ai-creators'],
       views: 4820,
-      content: `<h2>Why Choosing the Right Generator Matters in 2026</h2>
-<p>AI image generation has evolved from experimental art into a daily production powerhouse for creators, small businesses, and social media managers. Whether you are designing a festival poster, a clean WhatsApp status, or a brand mockup, choosing the right model saves hours of editing.</p>
-<div class="callout-box"><strong>Quick Creator Tip:</strong> Match your model to your goal—use <em>Flux.1</em> for photorealistic skin and lighting, and <em>Ideogram 2.0</em> when you need flawless embedded typography.</div>
-<h2>1. Flux.1 Dev & Schnell (Best for Photorealism)</h2>
-<p>Flux has redefined studio portrait and product photography fidelity. Its adherence to complex lighting prompts and hand anatomy makes it our #1 recommendation for the Keerthi_dot_exe community.</p>
-<h3>Sample Studio Prompt You Can Copy</h3>
-<pre class="prompt-block">Editorial studio portrait of an Indian creative director, framed by translucent frosted glass panels, soft lavender and cyan rim lighting, clean pearl-white background, 85mm f/1.4 --ar 4:5</pre>
-<h2>2. Ideogram 2.0 (Best for Posters & Typography)</h2>
-<p>When creating restaurant posters, event invitations, or quote cards, spelling accuracy is critical. Ideogram 2.0 handles multi-line headlines, badges, and clean vector layouts effortlessly.</p>
-<h2>3. Leonardo Phoenix & Playground v3</h2>
-<p>Both platforms offer generous daily free tiers with built-in canvas upscalers and style reference controls, making them ideal for beginners starting their creative journey.</p>`,
+      content: `<p>Free image generators change their limits often. The useful question is not simply “Which one is best?” but “Which one gives me the right result with the least cleanup?” This guide compares ten free or freemium options by the kind of work they handle well. Free access, available models, and commercial-use terms vary by account and region, so check each product's current plan before starting a client project.</p>
+<div class="callout-box"><strong>Quick answer:</strong> Start with ChatGPT Images or Gemini for conversational edits, Ideogram for readable poster text, Adobe Firefly for design workflows, and a hosted Flux model when you want to experiment with open models. Free quotas are limited and can change.</div>
+<h2>How we chose these tools</h2>
+<p>We prioritized tools that a new creator can try without buying a plan first. The comparison focuses on four practical questions: how quickly you can get a usable first draft, how well the tool follows composition and text instructions, what editing controls are available, and how easy it is to understand usage rights. A tool can be excellent for personal experiments and still be the wrong choice for a paid campaign.</p>
+<h2>1. ChatGPT Images — best for iterative edits</h2>
+<p>ChatGPT Images is a good starting point when you want to describe an idea in plain language, review the first image, then ask for focused changes. It is particularly convenient for adjusting the scene, adding or removing objects, and trying alternate crops without rewriting the entire brief. Free access is available with usage limits, so save a successful prompt and expect the quota to vary.</p>
+<p><strong>Try it for:</strong> concept art, social graphics, product-scene mockups, and edits to an uploaded image. <a href="https://help.openai.com/en/articles/11084440-images-in-chatgpt" target="_blank" rel="noopener noreferrer">See the current ChatGPT Images guide</a>.</p>
+<h2>2. Gemini — best for conversational image editing</h2>
+<p>Gemini is useful when your workflow is a conversation: upload a reference, explain what should stay the same, and request a few changes in sequence. It can help with outfit, background, prop, and style variations. Availability and limits depend on the current Gemini plan and region; check the interface before planning a batch.</p>
+<p><strong>Try it for:</strong> variations on a reference image, creator portraits, and quick visual brainstorming. Google's <a href="https://blog.google/products-and-platforms/products/gemini/image-generation-prompting-tips/" target="_blank" rel="noopener noreferrer">official prompting tips</a> recommend describing the subject, composition, action, location, style, and the edit you want.</p>
+<h2>3. Microsoft Designer Image Creator — best for quick social concepts</h2>
+<p>Designer is approachable for creators who want to move from an image idea into a social post or a simple layout. It is easy to test several directions before opening a full design editor. Image availability and generation boosts can change, so treat the free allowance as a way to prototype rather than a guaranteed production quota.</p>
+<p><strong>Try it for:</strong> social post concepts, campaign moodboards, and simple promotional graphics. Add final text and brand details in a design tool instead of trusting a generator with tiny copy.</p>
+<h2>4. Ideogram — best when the image needs visible text</h2>
+<p>Ideogram is worth trying for posters, title cards, and graphic compositions where lettering is part of the artwork. It gives you a direct way to explore different typography-led directions. Free-plan access and queue limits are subject to change; review the <a href="https://ideogram.ai/plans" target="_blank" rel="noopener noreferrer">current Ideogram plans</a> before building a production schedule.</p>
+<p><strong>Try it for:</strong> event posters, quote cards, thumbnails, and packaging concepts. Always proofread every word in the exported image, especially names, dates, and prices.</p>
+<h2>5. Adobe Firefly — best for design-oriented workflows</h2>
+<p>Firefly fits creators who already work with Adobe's design tools and want generated images or edits as part of a broader composition. Its design context can make it easier to move from a visual experiment into a polished asset. The number of available generative credits depends on the plan and product, so check Adobe's current <a href="https://www.adobe.com/products/firefly/plans.html" target="_blank" rel="noopener noreferrer">Firefly plan details</a>.</p>
+<p><strong>Try it for:</strong> campaign backgrounds, visual extensions, and concept variations that will be refined in a design editor. Review the applicable license and terms for the specific use.</p>
+<h2>6. Canva Magic Media — best for a fast post-to-layout workflow</h2>
+<p>Canva is convenient when the destination is already a presentation, flyer, or social post. Generate a background or supporting visual, then continue arranging the design in the same workspace. AI feature availability and monthly usage allowances vary by plan.</p>
+<p><strong>Try it for:</strong> first drafts of Instagram posts, story backgrounds, and presentation visuals. Keep important text as editable type in the design, rather than baking it into the generated image.</p>
+<h2>7. Leonardo — best for style exploration</h2>
+<p>Leonardo offers a creator-focused interface with model and style choices that make it useful for experimenting with a consistent visual direction. It can take a few attempts to learn which settings work for your subject. Free tokens and model availability can change, and some features may require a paid plan.</p>
+<p><strong>Try it for:</strong> character concepts, game-inspired visuals, product scenes, and a set of related campaign images. Save the model and settings alongside a result you want to reproduce.</p>
+<h2>8. Recraft — best for graphic assets and vector-style ideas</h2>
+<p>Recraft is a useful option when your brief leans toward icons, illustrations, or a family of coordinated graphic assets. It can help explore a visual system before you redraw or refine final files. Check export formats, plan limits, and commercial terms in the current product before using an output as a logo or trademark.</p>
+<p><strong>Try it for:</strong> illustration directions, icon concepts, sticker sheets, and brand moodboards.</p>
+<h2>9. Playground — best for quick image variations</h2>
+<p>Playground is another browser-based place to compare visual directions and explore styles. It is useful for lightweight experimentation when you want to create several rough options before choosing a direction. Free access and available models may change, so do not assume a fixed number of daily generations.</p>
+<p><strong>Try it for:</strong> moodboards, background concepts, and early-stage social creative drafts.</p>
+<h2>10. Hugging Face Spaces — best for trying community models</h2>
+<p>Hugging Face Spaces hosts demos built by the community and model creators. It is a practical way to see how different open models behave without setting up a local GPU first. Demos may have queues, usage limits, or be temporarily unavailable; read the Space's license and model card before using an output commercially.</p>
+<p><strong>Try it for:</strong> side-by-side model experiments and learning what open image models can do. Do not upload private client images to a public demo unless its data handling terms are clear.</p>
+<h2>Which generator should you choose?</h2>
+<ul><li><strong>For a back-and-forth edit:</strong> try ChatGPT Images or Gemini.</li><li><strong>For a poster where lettering matters:</strong> test Ideogram, then proof every word.</li><li><strong>For design production:</strong> try Firefly or Canva and finish the layout with editable text.</li><li><strong>For style experiments:</strong> explore Leonardo, Recraft, Playground, or a well-maintained Hugging Face Space.</li></ul>
+<p>Before committing, run the same short brief through two tools. Compare the subject, composition, lighting, text accuracy, and how much cleanup each result needs. This small test is more useful than choosing a generator from a leaderboard alone.</p>
+<h2>A prompt structure that works across tools</h2>
+<p>Describe the subject first, then the action, setting, framing, lighting, palette, and intended use. Keep instructions concrete. For text-heavy designs, generate the visual background first and add copy in a layout editor.</p>
+<h3>Copy-ready editorial portrait prompt</h3>
+<pre class="prompt-block">Create a polished editorial portrait of an Indian creative founder in a bright contemporary studio. Medium close-up, relaxed confident expression, natural skin texture, soft window light with a subtle lavender and cyan edge glow, uncluttered pearl-white background, elegant neutral wardrobe, premium magazine photography, realistic hands, balanced negative space on the left for a headline. Portrait 4:5 crop. No text, watermark, logo, or extra fingers.</pre>
+<h2>Free does not always mean commercially cleared</h2>
+<p>Each tool has its own terms for inputs, outputs, public galleries, and commercial use. Check the current terms for your account tier before delivering client work. Avoid uploading private photographs, unreleased products, or customer information to a service unless you are comfortable with its privacy and retention terms.</p>
+<h2>Final recommendation</h2>
+<p>Pick the generator that fits the job, not the one with the biggest feature list. Start with one clear brief, compare two outputs, and keep the prompt and settings that work. For everyday creator content, a fast conversational tool plus a layout editor is often enough; for typography or a repeatable brand style, test a specialist tool and check its license before publishing.</p>`,
     },
     {
       id: 'blog-2',
@@ -833,6 +902,23 @@ function createInitialBlogs(): BlogPost[] {
       updatedAt: a.publishAt,
     };
   });
+}
+
+function migrateSeedBlogContent(blogs: BlogPost[]): boolean {
+  const legacy = blogs.find((blog) => blog.slug === 'top-10-free-ai-image-generators-in-2026');
+  const improved = createInitialBlogs().find((blog) => blog.slug === 'top-10-free-ai-image-generators-in-2026');
+  if (!legacy || !improved || legacy.wordCount > 350 || !legacy.content.includes('Why Choosing the Right Generator Matters in 2026')) return false;
+  const seededDate = new Date(legacy.publishAt).getTime();
+  const lastEdit = new Date(legacy.updatedAt).getTime();
+  if (Number.isFinite(lastEdit) && lastEdit !== seededDate) return false;
+  Object.assign(legacy, {
+    excerpt: improved.excerpt,
+    content: improved.content,
+    wordCount: improved.wordCount,
+    readingTimeMinutes: improved.readingTimeMinutes,
+    updatedAt: new Date().toISOString(),
+  });
+  return true;
 }
 
 function createInitialInstagramMedia(): InstagramMediaItem[] {
@@ -1036,6 +1122,11 @@ export async function ensureSeededState(): Promise<DatabaseState> {
         dbState.comments = createInitialComments();
         added = true;
       }
+      if (!Array.isArray(dbState.orders)) {
+        dbState.orders = [];
+        added = true;
+      }
+      if (migrateSeedBlogContent(dbState.blogs)) added = true;
       const adminUser = dbState.users.find(
         (u) => u.id === 'usr-admin-1' || u.email.toLowerCase() === adminEmail
       );
@@ -1296,12 +1387,6 @@ export async function ensureSeededState(): Promise<DatabaseState> {
     },
   ];
 
-  const oauthConfigured = Boolean(
-    process.env.INSTAGRAM_APP_ID &&
-      process.env.INSTAGRAM_APP_SECRET &&
-      !process.env.INSTAGRAM_APP_ID.includes('your_meta')
-  );
-
   const comments = createInitialComments();
 
   dbState = {
@@ -1315,13 +1400,15 @@ export async function ensureSeededState(): Promise<DatabaseState> {
     notifications,
     settings: createInitialSettings(),
     instagramAccount: {
-      connected: oauthConfigured,
-      mode: oauthConfigured ? 'official_api' : 'fallback_embed',
+      // App credentials enable OAuth, but only a completed user authorization
+      // should mark the Instagram account as connected.
+      connected: false,
+      mode: 'fallback_embed',
       username: 'keerthi_dot_exe',
       accountId: '17841405829301928',
       accountType: 'MEDIA_CREATOR',
       followersCount: '41.4K',
-      encryptedAccessToken: oauthConfigured ? encryptSensitiveToken('ig_configured_oauth_session') : undefined,
+      encryptedAccessToken: undefined,
       lastSyncedAt: '2026-10-19T06:00:00.000Z',
       lastSyncError: null,
       publicDisplayEnabled: true,
@@ -1329,6 +1416,7 @@ export async function ensureSeededState(): Promise<DatabaseState> {
     instagramMedia: createInitialInstagramMedia(),
     mediaAssets,
     auditLogs,
+    orders: [],
   };
 
   saveDatabase();
@@ -1383,6 +1471,7 @@ export function getDatabaseStatusSummary() {
       instagramMedia: db.instagramMedia.length,
       mediaAssets: db.mediaAssets.length,
       auditLogs: db.auditLogs.length,
+      orders: db.orders?.length || 0,
     },
   };
 }

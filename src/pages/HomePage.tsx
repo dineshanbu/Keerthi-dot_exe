@@ -206,26 +206,17 @@ export const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Ambient CSS Radial Glass Gradients */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
-      >
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-purple-300/20 blur-3xl" />
-        <div className="absolute top-32 right-0 w-[28rem] h-[28rem] rounded-full bg-sky-300/20 blur-3xl" />
-        <div className="absolute bottom-20 left-1/3 w-96 h-96 rounded-full bg-pink-200/20 blur-3xl" />
-      </div>
-
+    <div className="home-page relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12 space-y-16">
         {/* ================================================================
             1. HERO SECTION
         ================================================================ */}
-        <section id="home" className="relative pt-2">
+        <section id="home" className="home-hero relative pt-2">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Left Column: Headline & CTAs */}
             <div className="lg:col-span-6 space-y-5">
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-purple-100/80 border border-purple-200/60 text-[11px] font-bold uppercase tracking-wider text-purple-800">
+                <Sparkles className="w-3.5 h-3.5" />
                 <span>AI CREATIVE COMMUNITY</span>
               </div>
 
@@ -237,7 +228,7 @@ export const HomePage: React.FC = () => {
                 Prompt.
                 <br />
                 Grow{' '}
-                <span className="italic bg-gradient-to-r from-[#8B5CF6] via-[#6366F1] to-[#38BDF8] bg-clip-text text-transparent">
+                <span className="home-title-gradient italic bg-gradient-to-r from-[#8B5CF6] via-[#6366F1] to-[#38BDF8] bg-clip-text text-transparent">
                   with AI.
                 </span>
               </h1>
@@ -249,7 +240,7 @@ export const HomePage: React.FC = () => {
               <div className="flex flex-wrap items-center gap-3.5 pt-1">
                 <Link
                   to="/prompts"
-                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-gradient-to-r from-[#8B5CF6] via-[#7C3AED] to-[#6366F1] text-white text-sm font-semibold shadow-lg shadow-purple-500/25 hover:brightness-105 transition-all whitespace-nowrap shrink-0"
+                  className="hero-primary-action inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-gradient-to-r from-[#8B5CF6] via-[#7C3AED] to-[#6366F1] text-white text-sm font-semibold shadow-lg shadow-purple-500/25 hover:brightness-105 transition-all whitespace-nowrap shrink-0"
                 >
                   <span>Explore AI Prompts</span>
                   <ArrowRight className="w-4 h-4" />
@@ -268,13 +259,16 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* Right Column: Frosted Glass Portrait Frame & Floating Prompt Cards */}
-            <div className="lg:col-span-6 relative flex items-center justify-center min-h-[380px] sm:min-h-[430px]">
+            <div className="hero-visual-stage lg:col-span-6 relative flex items-center justify-center min-h-[380px] sm:min-h-[430px]">
               {/* Decorative CSS Pearl Orbs */}
-              <div aria-hidden="true" className="pearl-orb w-14 h-14 rounded-full absolute top-2 left-10 -z-10" />
-              <div aria-hidden="true" className="pearl-orb w-20 h-20 rounded-full absolute bottom-4 right-8 -z-10" />
+              <div aria-hidden="true" className="pearl-orb hero-pearl hero-pearl--one w-14 h-14 rounded-full absolute top-2 left-10 -z-10" />
+              <div aria-hidden="true" className="pearl-orb hero-pearl hero-pearl--two w-20 h-20 rounded-full absolute bottom-4 right-8 -z-10" />
+              <div aria-hidden="true" className="hero-orbit-icon hero-orbit-icon--one"><ImageIcon className="w-5 h-5" /></div>
+              <div aria-hidden="true" className="hero-orbit-icon hero-orbit-icon--two"><Zap className="w-5 h-5" /></div>
+              <div aria-hidden="true" className="hero-orbit-icon hero-orbit-icon--three"><Palette className="w-5 h-5" /></div>
 
               {/* Center Frosted Portrait Frame */}
-              <div className="relative w-64 sm:w-72 h-80 sm:h-88 rounded-[2rem] p-2.5 glass-panel shadow-2xl rotate-2">
+              <div className="hero-portrait-frame relative w-64 sm:w-72 h-80 sm:h-88 rounded-[2rem] p-2.5 glass-panel shadow-2xl rotate-2">
                 <div className="w-full h-full rounded-[1.5rem] overflow-hidden relative bg-gradient-to-b from-purple-50 to-slate-100">
                   <SmartImage
                     src={settings?.creatorProfileImage || '/assets/media/keerthi-hero.png'}
@@ -290,7 +284,7 @@ export const HomePage: React.FC = () => {
               {/* Floating Card 1: AI Image Prompts */}
               <Link
                 to="/prompts?category=Image+Generation"
-                className="absolute left-0 sm:left-4 top-12 glass-panel rounded-2xl p-3.5 w-40 sm:w-44 -rotate-6 hover:rotate-0 transition-transform shadow-lg group"
+                className="hero-float-card hero-float-card--image absolute left-0 sm:left-4 top-12 glass-panel rounded-2xl p-3.5 w-40 sm:w-44 -rotate-6 hover:rotate-0 transition-transform shadow-lg group"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-sm">
@@ -310,7 +304,7 @@ export const HomePage: React.FC = () => {
               {/* Floating Card 2: AI Video Prompts */}
               <Link
                 to="/prompts?category=Video+Generation"
-                className="absolute left-2 sm:left-8 bottom-4 glass-panel rounded-2xl p-3.5 w-40 sm:w-44 rotate-3 hover:rotate-0 transition-transform shadow-lg group"
+                className="hero-float-card hero-float-card--video absolute left-2 sm:left-8 bottom-4 glass-panel rounded-2xl p-3.5 w-40 sm:w-44 rotate-3 hover:rotate-0 transition-transform shadow-lg group"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-rose-500 text-white flex items-center justify-center shadow-sm">
@@ -330,7 +324,7 @@ export const HomePage: React.FC = () => {
               {/* Floating Card 3: Turn Imagination into Reality */}
               <Link
                 to="/prompts"
-                className="hidden sm:flex absolute right-0 top-4 glass-panel rounded-2xl p-4 w-44 items-start justify-between gap-2 hover:-translate-y-0.5 transition-transform"
+                className="hero-float-card hero-float-card--idea hidden sm:flex absolute right-0 top-4 glass-panel rounded-2xl p-4 w-44 items-start justify-between gap-2 hover:-translate-y-0.5 transition-transform"
               >
                 <p className="text-xs font-semibold text-slate-800 leading-snug font-display">
                   Turn
@@ -347,7 +341,7 @@ export const HomePage: React.FC = () => {
               {/* Floating Card 4: Business Templates */}
               <Link
                 to="/prompts?category=Business+Prompts"
-                className="absolute right-0 sm:right-2 bottom-10 glass-panel rounded-2xl p-3.5 w-40 sm:w-44 -rotate-3 hover:rotate-0 transition-transform shadow-lg"
+                className="hero-float-card hero-float-card--business absolute right-0 sm:right-2 bottom-10 glass-panel rounded-2xl p-3.5 w-40 sm:w-44 -rotate-3 hover:rotate-0 transition-transform shadow-lg"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 text-white flex items-center justify-center shadow-sm">
@@ -366,9 +360,43 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
+          {/* Clear, image-led prompt choices for phones; the desktop floating cards stay in the portrait stage. */}
+          <div className="hero-mobile-prompt-grid" aria-label="Explore prompt collections">
+            <Link to="/prompts?category=Image+Generation" className="hero-mobile-prompt-card hero-mobile-prompt-card--image">
+              <div className="hero-mobile-prompt-visual">
+                <SmartImage
+                  src={(homeData?.featuredPrompts || []).find((prompt) => /image|portrait|art|photo/i.test(`${prompt.category} ${prompt.title}`))?.previewImage || '/assets/media/keerthi-about.png'}
+                  alt="AI image prompt preview"
+                  className="hero-mobile-prompt-image"
+                />
+                <span className="hero-mobile-prompt-badge"><ImageIcon className="w-3.5 h-3.5" /> IMAGE</span>
+                <span className="hero-mobile-prompt-arrow"><ArrowRight className="w-4 h-4" /></span>
+              </div>
+              <div className="hero-mobile-prompt-copy">
+                <span className="hero-mobile-prompt-kicker">Create a still</span>
+                <span className="hero-mobile-prompt-title">AI Image Prompts</span>
+              </div>
+            </Link>
+            <Link to="/prompts?category=Video+Generation" className="hero-mobile-prompt-card hero-mobile-prompt-card--video">
+              <div className="hero-mobile-prompt-visual">
+                <SmartImage
+                  src={settings?.featuredCreations?.find((creation) => creation.mediaType === 'Video')?.previewUrl || '/assets/media/blog-video-tools.png'}
+                  alt="AI video prompt preview"
+                  className="hero-mobile-prompt-image"
+                />
+                <span className="hero-mobile-prompt-badge"><Video className="w-3.5 h-3.5" /> VIDEO</span>
+                <span className="hero-mobile-prompt-arrow"><ArrowRight className="w-4 h-4" /></span>
+              </div>
+              <div className="hero-mobile-prompt-copy">
+                <span className="hero-mobile-prompt-kicker">Bring ideas to life</span>
+                <span className="hero-mobile-prompt-title">AI Video Prompts</span>
+              </div>
+            </Link>
+          </div>
+
           {/* Community Statistics Strip */}
-          <div className="mt-8 glass-panel rounded-2xl p-4 sm:px-6 grid grid-cols-2 lg:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/60">
-            <div className="flex items-center gap-3.5 pt-2 sm:pt-0">
+          <div className="community-stats mt-8 glass-panel rounded-2xl p-4 sm:px-6 grid grid-cols-2 lg:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/60">
+            <div className="community-stat flex items-center gap-3.5 pt-2 sm:pt-0">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                 <Instagram className="w-5 h-5" />
               </div>
@@ -380,7 +408,7 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
+            <div className="community-stat flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
               <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
                 <Box className="w-5 h-5" />
               </div>
@@ -388,13 +416,12 @@ export const HomePage: React.FC = () => {
                 <p className="text-lg font-extrabold text-slate-900 font-display tabular-nums">
                   {settings?.stats.promptLibraryCount || '1000+'}
                 </p>
-                <p className="text-xs text-slate-500">
-                  AI Prompts ({homeData?.counts.publishedPromptsCount || 13} Featured Live)
-                </p>
+                <p className="text-xs text-slate-500">AI Prompts</p>
+                <p className="community-stat-detail text-[10px] text-slate-400">{homeData?.counts.publishedPromptsCount || 13} featured live</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
+            <div className="community-stat flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
               <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                 <MessageCircle className="w-5 h-5" />
               </div>
@@ -406,7 +433,7 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
+            <div className="community-stat flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
               <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                 <Zap className="w-5 h-5" />
               </div>
@@ -620,13 +647,20 @@ export const HomePage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {(settings?.featuredCreations || []).map((creation) => (
-              <GlassCard key={creation.id} className="p-3 flex flex-col justify-between">
+              <GlassCard key={creation.id} className="creation-showcase-card p-3 flex flex-col justify-between">
                 <div>
                   <div className="relative h-40 rounded-xl overflow-hidden bg-slate-900 mb-3">
                     <SmartImage
                       src={creation.previewUrl}
                       alt={creation.title}
                       className="w-full h-full object-cover"
+                    />
+                    <img
+                      src={creation.mediaType.toLowerCase().includes('video') ? '/assets/media/glass-orbit-loop.gif' : '/assets/media/glass-sparkle-loop.gif'}
+                      alt=""
+                      aria-hidden="true"
+                      className="card-loop-gif card-loop-gif--sparkle"
+                      loading="lazy"
                     />
                   </div>
                   <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
@@ -807,7 +841,7 @@ export const HomePage: React.FC = () => {
           {homeLoading ? (
             <LoadingSkeleton count={5} />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="blog-preview-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {(homeData?.latestBlogs || []).slice(0, 5).map((post) => (
                 <BlogCard key={post.id} post={post} compact />
               ))}

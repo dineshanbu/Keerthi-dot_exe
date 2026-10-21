@@ -619,9 +619,9 @@ export const UserProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
+    <div className="profile-page max-w-5xl mx-auto px-4 py-10 space-y-8">
       <GlassCard className="p-6 sm:p-8 space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-200/70 pb-5">
+        <div className="profile-page-header flex items-center justify-between border-b border-slate-200/70 pb-5">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow bg-purple-100">
               <SmartImage
