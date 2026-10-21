@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <script>
+      (function () {
+        try {
+          var currentFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : undefined;
+          var origDefineProperty = Object.defineProperty;
+
+          var ensureMutableFetch = function (target) {
+            if (!target) return;
+            var d = Object.getOwnPropertyDescriptor(target, 'fetch');
+            if (!d || d.configurable !== false) {
+              origDefineProperty.call(Object, target, 'fetch', {
+                configurable: true,
+                enumerable: true,
+                get: function () {
+                  return currentFetch;
+                },
+                set: function (fn) {
+                  if (typeof fn === 'function') {
+                    currentFetch = fn;
+                  }
+                },
+              });
+            }
+          };
+
+          ensureMutableFetch(window);
+          if (typeof Window !== 'undefined' && Window.prototype) {
+            ensureMutableFetch(Window.prototype);
+          }
+
+          Object.defineProperty = function (obj, prop, descriptor) {
+            if (
+              (obj === window || (typeof Window !== 'undefined' && obj === Window.prototype)) &&
+              prop === 'fetch' &&
+              descriptor
+            ) {
+              if (descriptor.get && !descriptor.set) {
+                var origGetter = descriptor.get;
+                descriptor = {
+                  configurable: true,
+                  enumerable: descriptor.enumerable !== false,
+                  get: function () {
+                    return currentFetch || origGetter.call(this);
+                  },
+                  set: function (fn) {
+                    if (typeof fn === 'function') {
+                      currentFetch = fn;
+                    }
+                  },
+                };
+              } else if ('value' in descriptor && descriptor.writable === false) {
+                descriptor = Object.assign({}, descriptor, {
+                  writable: true,
+                  configurable: true,
+                });
+              }
+            }
+            return origDefineProperty.call(Object, obj, prop, descriptor);
+          };
+
+          window.addEventListener(
+            'error',
+            function (event) {
+              var msg = String((event && event.message) || '');
+              var file = String((event && event.filename) || '');
+              if (
+                file.indexOf('chrome-extension://') === 0 ||
+                msg.indexOf('Cannot set property fetch') !== -1
+              ) {
+                event.stopImmediatePropagation();
+                event.preventDefault();
+                return false;
+              }
+            },
+            true
+          );
+        } catch (e) {}
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keerthi_dot_exe — AI Creative Community</title>
+    <meta name="description" content="Your complete hub for AI prompts, creative templates, business designs, and practical AI tutorials for creators and brands." />
+    <meta property="og:title" content="Keerthi_dot_exe — AI Creative Community" />
+    <meta property="og:description" content="Your complete hub for AI prompts, creative templates, business designs, and practical AI tutorials for creators and brands." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/assets/media/keerthi-hero.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-[#F8F9FC] text-[#111827] antialiased selection:bg-purple-500/20 selection:text-purple-900">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

@@ -1,0 +1,869 @@
+# PROJECT: KEERTHI_DOT_EXE — FULL-STACK AI CREATOR COMMUNITY PLATFORM
+
+Act as a senior full-stack software architect, React UI/UX designer, Node.js backend engineer, MongoDB database specialist, security engineer, and QA engineer.
+
+Build a complete, production-oriented website for **Keerthi_dot_exe**, an AI creator community with approximately 41K Instagram followers.
+
+This project must include a premium public website, a separate prompt library, a complete blog CMS, authentication, a secure admin dashboard, notifications, enquiry management, and an official Instagram media integration.
+
+## MOST IMPORTANT INSTRUCTION
+
+Do not deliver only a design, screenshot, static HTML page, mockup, or project plan.
+
+Build the actual working application with frontend, backend, database schemas, API routes, authentication, CRUD functionality, validation, error handling, and setup documentation.
+
+Inspect the existing project before making changes. If a repository already exists, preserve useful existing code and integrate the new functionality instead of blindly deleting files.
+
+Implement the application in phases, verify each phase, and continue until all core features work. If a third-party integration requires external credentials or approval, implement the complete integration structure and clearly document the remaining configuration.
+
+# PHASE 1 — TECHNOLOGY STACK
+
+Use the following stack:
+
+Frontend:
+- React
+- Vite
+- TypeScript
+- Tailwind CSS
+- React Router
+- Lucide React icons
+- React Hook Form with Zod validation
+- A suitable query/data-fetching library for API state management
+- Tiptap rich text editor for blog editing
+- Framer Motion or lightweight CSS animations
+
+Backend:
+- Node.js
+- Express.js
+- TypeScript
+- MongoDB
+- Mongoose
+- Zod request validation
+- Secure authentication and authorization
+- Socket.IO or an equivalent mechanism for real-time admin notifications
+
+Testing:
+- Vitest and React Testing Library for frontend tests
+- Jest or Vitest and Supertest for backend/API tests
+
+Use current stable, mutually compatible package versions. Avoid abandoned libraries and unnecessary dependencies.
+
+# PHASE 2 — DESIGN SYSTEM
+
+Create a highly professional, minimalist white glassmorphism design inspired by the attached reference image.
+
+Brand:
+Keerthi_dot_exe
+Tagline: AI Creative Community
+
+Core visual direction:
+- Premium frosted glass interfaces
+- Transparent cards with backdrop blur
+- Soft white and pearl-gray surfaces
+- Subtle lavender, cyan, blue, and pink gradient accents
+- Thin translucent borders
+- Soft ambient shadows
+- Gentle inner highlights
+- Small, restrained glow effects
+- Elegant typography and generous whitespace
+- Smooth section transitions
+- Refined micro-interactions
+
+Suggested design tokens:
+- Primary background: #F8F9FC
+- Secondary background: #FFFFFF
+- Primary text: #111827
+- Secondary text: #64748B
+- Purple accent: #8B5CF6
+- Blue accent: #3B82F6
+- Cyan accent: #38BDF8
+- Border: rgba(255,255,255,0.75)
+- Glass surface: rgba(255,255,255,0.58)
+
+Use these as a starting palette and refine them into a consistent design system.
+
+Implement reusable components:
+- GlassCard
+- GlassButton
+- GlassInput
+- GlassModal
+- GlassDropdown
+- GlassNavbar
+- SectionHeading
+- PromptCard
+- BlogCard
+- NotificationBell
+- AdminSidebar
+- LoadingSkeleton
+- EmptyState
+- ErrorState
+- ConfirmationDialog
+- ToastNotification
+
+Create light glass surfaces with realistic blur, subtle reflections, tasteful gradients, and excellent text readability.
+
+Use CSS gradients, pseudo-elements, and lightweight CSS shapes for abstract glass decorations. Do not use a large background banner image, a full-screen photographic background, or a giant decorative background photo.
+
+Use actual images only where they provide content value, such as blog thumbnails, AI creation previews, creator photographs, and Instagram posts.
+
+Keep the overall result clean, professional, premium, and fast-loading. Avoid excessive neon, excessive floating objects, overloaded card grids, and generic AI dashboard styling.
+
+Responsive requirements:
+- Mobile-first responsive layouts
+- Desktop, tablet, and mobile navigation
+- Accessible typography and contrast
+- Touch-friendly buttons
+- Keyboard accessibility
+- Reduced-motion support
+- Proper loading, error, and empty states
+
+# PHASE 3 — PUBLIC WEBSITE
+
+Create one main landing page with these sections:
+
+1. Home
+2. About Us
+3. Services
+4. AI Prompt Highlights
+5. Featured Creations
+6. Instagram Feed
+7. WhatsApp Communities
+8. Latest Blog Articles
+9. Contact / Enquiry
+10. Footer
+
+Navigation:
+- Home
+- About
+- Services
+- AI Prompts
+- Blog
+- Contact
+- Search
+- Login
+- Sign Up
+- User profile when logged in
+
+Use anchor scrolling for the main landing-page sections.
+
+Create separate functional routes for:
+- /blog
+- /blog/:slug
+- /prompts
+- /prompts/:slug
+- /login
+- /signup
+- /forgot-password
+- /reset-password
+- /privacy-policy
+- /terms-and-conditions
+
+Add protected profile/account routes where appropriate.
+
+## Hero section
+
+Headline:
+"Create. Design. Prompt. Grow with AI."
+
+Description:
+"Discover creative AI prompts, business templates, visual inspiration, and practical AI tutorials — all in one creative community."
+
+Primary CTA: Explore AI Prompts
+Secondary CTA: Join Our Community
+
+Display concise community statistics, including the approximate 41K Instagram audience, prompt library size, and three WhatsApp groups. Values must come from configurable settings or real database counts wherever appropriate.
+
+The hero must use the requested white glassmorphism treatment, CSS-based ambient gradients, translucent cards, subtle motion, and clean typography. Do not use a giant photographic banner.
+
+## About section
+
+Explain Keerthi_dot_exe, its creative mission, AI experimentation, educational content, and community.
+
+Provide configurable profile content and a creator image that can be changed in the admin settings.
+
+## Services
+
+Include:
+- AI image creation
+- AI video prompt design
+- WhatsApp status inspiration
+- Business poster and advertisement templates
+- AI tutorials
+- Social media content ideas
+- Prompt consultation and creative services
+
+Service cards must be editable through the admin dashboard.
+
+## WhatsApp communities
+
+Create three configurable group cards:
+
+1. AI Status Studio
+2. AI Business Creators
+3. AI Tech & Prompt Lab
+
+Each group must have an editable description, icon, CTA label, and invitation URL.
+
+Never invent invite links. If a link is missing, display an appropriate unavailable state.
+
+## Featured creations
+
+Display selected AI images, video previews, and business creative examples.
+
+Allow an admin to select and order featured content.
+
+## Instagram feed
+
+Add an Instagram section that supports authorized API media and an optional manual fallback.
+
+Display a responsive grid of image posts, videos, and Reels when media is available.
+
+Include:
+- Media thumbnails
+- Captions or short excerpts when available
+- Media type labels
+- Publication dates when available
+- Links to the original Instagram content
+- Load More pagination
+- Loading and disconnected states
+
+Only display media obtained through authorized official API access or explicitly configured embeds.
+
+## Footer
+
+Include:
+- Keerthi_dot_exe branding
+- Home
+- About
+- Services
+- AI Prompts
+- Blog
+- Contact
+- Instagram link
+- WhatsApp link
+- Privacy Policy
+- Terms & Conditions
+- Copyright notice
+
+Make all footer URLs functional.
+
+# PHASE 4 — SIGNUP, LOGIN AND USER MANAGEMENT
+
+Implement real user authentication with a secure user database.
+
+Signup fields:
+- Name
+- Email
+- Password
+- Confirm password
+- Privacy Policy / Terms acceptance
+
+Login:
+- Email and password
+- Show/hide password
+- Forgot password
+- Login/logout
+- Appropriate validation and error messages
+
+Also implement:
+- Password hashing with bcrypt or Argon2
+- Secure session handling or properly implemented short-lived JWT access tokens with secure refresh-token handling
+- HttpOnly, Secure, appropriately configured SameSite cookies where cookie-based authentication is used
+- Login rate limiting
+- Password reset using time-limited, single-use tokens
+- Email verification if SMTP is configured
+- Account profile editing
+- Account status management
+- Duplicate-email protection
+- Server-side role checks on protected endpoints
+
+Roles:
+- Admin
+- User
+
+Public users must never be able to self-register with the Admin role.
+
+Provide a secure initial-admin seeding command that reads credentials from environment variables. Never hardcode admin credentials or create a public backdoor.
+
+Do not store passwords or long-lived authentication tokens in localStorage.
+
+# PHASE 5 — ADMIN DASHBOARD
+
+Create a dedicated, polished, responsive admin interface at /admin.
+
+Use a sidebar, top navigation, summary cards, searchable tables, filter dropdowns, pagination, charts where useful, confirmation dialogs, and toast feedback.
+
+Dashboard summary:
+- Total registered users
+- New users
+- Total published blogs
+- Draft and scheduled blogs
+- Total prompts
+- New enquiries
+- Unread notifications
+- Instagram connection and sync status
+
+Admin sections:
+
+A. Dashboard
+B. User Management
+C. Blog Management
+D. Prompt Management
+E. Category and Tag Management
+F. Enquiry Management
+G. Notification Management
+H. Instagram Integration
+I. Media Library
+J. Website Settings
+K. Security / Admin Profile
+
+Every admin section must use real API data rather than hardcoded sample values.
+
+## User management
+
+Allow authorized admins to:
+- Search users by name or email
+- Filter by status and registration date
+- View user details
+- View registration and last-login timestamps
+- Change permitted account statuses
+- Disable or reactivate an account
+- Assign roles only through protected admin functionality
+- Delete accounts with appropriate confirmation and data-handling rules
+
+Do not expose password hashes, reset tokens, authentication tokens, or confidential data in admin tables or API responses.
+
+Record important administrative actions in an audit log.
+
+# PHASE 6 — ADVANCED BLOG CMS
+
+Blog management is a core feature and must be implemented thoroughly.
+
+Create /admin/blogs with:
+- All posts
+- Create post
+- Edit post
+- Preview post
+- Published posts
+- Draft posts
+- Scheduled posts
+- Archived posts
+- Search and filters
+- Pagination
+- Bulk actions with confirmation
+
+## Blog editor
+
+Build a professional content editor using Tiptap or another maintained rich-text editor.
+
+Editor capabilities:
+- H1, H2, H3 headings
+- Paragraphs
+- Bold and italic text
+- Ordered and unordered lists
+- Blockquotes
+- Links
+- Horizontal dividers
+- Image insertion
+- Image captions and alt text
+- Embedded video and approved embeds
+- Tables if supported reliably
+- Code blocks
+- Callout boxes
+- Buttons and CTA links
+- Prompt blocks with Copy Prompt buttons
+- Table of contents
+- Related prompt links
+- Related blog posts
+- Undo and redo
+
+Provide an intuitive editing toolbar and a readable writing canvas.
+
+## Blog publishing form
+
+Include:
+- Blog title
+- URL slug
+- Short excerpt
+- Featured image
+- Image alt text
+- Full article content
+- Category
+- Multiple tags
+- Author
+- SEO title
+- Meta description
+- Canonical URL when needed
+- Open Graph image
+- Featured-post toggle
+- Publication status
+- Publish date and time
+- Preview button
+- Save Draft button
+- Publish button
+- Schedule button
+
+Include word count, reading-time estimate, slug validation, unsaved-change warnings, autosave, and clear success/error feedback.
+
+Support previewing an article before publication, using the same typography and layout as the final public article.
+
+## Blog publication workflow
+
+Draft → Preview → Publish or Schedule → Public Blog Listing → Individual Article Page.
+
+Only published posts may appear in public listings.
+
+When a scheduled post reaches its publication time, automatically publish it using a reliable scheduler or database-based job mechanism, with safeguards against duplicate publication.
+
+When editing an existing published post, preserve its URL where possible and handle slug changes correctly.
+
+## Public blog design
+
+Create a visually rich but readable blog listing page.
+
+Include:
+- Featured article
+- Latest articles
+- Category filters
+- Search
+- Trending or featured content
+- Author information
+- Publication date
+- Reading time
+- Related prompt previews
+- Pagination or Load More
+
+Individual article pages must include:
+- Breadcrumbs
+- Article heading
+- Excerpt
+- Author and publication metadata
+- Featured image
+- Article content
+- Table of contents
+- Share links
+- Related prompts
+- Related articles
+- Previous/next articles where useful
+
+Use dynamic data from MongoDB, responsive layouts, excellent typography, and accessible components.
+
+Make content editing easy enough that the admin can publish new blogs without changing code.
+
+# PHASE 7 — AI PROMPT LIBRARY
+
+Create /prompts and /prompts/:slug as fully functional pages backed by MongoDB.
+
+Categories:
+- WhatsApp Status
+- Personal Profile Pictures
+- Aesthetic Portraits
+- Image Generation
+- Video Generation
+- Business Prompts
+- Product Advertisements
+- Food and Restaurant Marketing
+- Festival Creatives
+- Social Media
+- Logo and Branding
+- AI Tools and Tutorials
+- Other
+
+Each prompt must support:
+- Title
+- URL slug
+- Short description
+- Full prompt text
+- Category
+- Tags
+- Language
+- Preview image or video
+- Recommended AI tool/model
+- External tool URL
+- Usage instructions
+- Creator or author
+- Featured flag
+- Draft/published status
+- Creation and update timestamps
+
+Add:
+- Search
+- Category filtering
+- Tag filtering
+- Sorting
+- Pagination
+- Prompt detail pages
+- Copy Prompt button
+- Copy success feedback
+- Related prompts
+- Admin create/edit/preview/publish/unpublish controls
+
+Display prompt content exactly as authored. Preserve line breaks and formatting, and make long prompts easy to read and copy.
+
+Validate all external URLs and treat prompt content as untrusted user-generated input when rendering it.
+
+# PHASE 8 — ENQUIRY AND CONTACT MANAGEMENT
+
+Create a functional enquiry system connected to the backend and MongoDB.
+
+Public enquiry form:
+- Name
+- Email
+- Phone number, optional
+- Subject
+- Service category
+- Message
+- Consent checkbox
+
+On submission:
+1. Validate the form in React.
+2. Validate the request again in Express.
+3. Apply rate limiting and basic spam protection.
+4. Store the enquiry in MongoDB.
+5. Generate an admin notification.
+6. Send an acknowledgement email only if email service is configured.
+7. Display accurate success or failure feedback.
+
+Never display a false success message if saving the enquiry fails.
+
+Admin enquiry management:
+- View all enquiries
+- Filter by status and date
+- Search by name, email, or subject
+- Read the full enquiry
+- Add internal notes
+- Assign status: New, In Progress, Replied, Closed
+- Record status-change timestamps
+- Reply via a configured email integration
+- Archive or delete with confirmation
+- Export enquiries to CSV, with admin authorization
+
+Store an audit trail of important status changes.
+
+# PHASE 9 — NOTIFICATIONS
+
+Implement a real notification system backed by MongoDB.
+
+Admin notifications should include:
+- New user registration
+- New contact/enquiry submission
+- Blog publication failures
+- Scheduled publishing failures
+- Instagram sync errors
+- Important security events
+
+User notifications may include:
+- New featured blogs
+- New prompts
+- Community announcements
+- Relevant platform updates
+
+Features:
+- Notification bell with unread count
+- Notification dropdown
+- Notifications page
+- Mark as read
+- Mark all as read
+- Pagination
+- Notification preferences where appropriate
+- Links to the relevant admin record or public page
+
+Use Socket.IO for real-time updates if configured correctly, with authenticated connections and proper room authorization. Provide a reliable API fallback.
+
+Optionally send email notifications through Nodemailer and SMTP settings.
+
+Do not hardcode email credentials or secrets. Notification failures must be logged and must not silently corrupt the main action.
+
+# PHASE 10 — INSTAGRAM API INTEGRATION
+
+Integrate the Keerthi_dot_exe Instagram account using the official Meta Instagram Platform APIs.
+
+Important: Do not scrape Instagram pages, automate unauthorized logins, or request the user's Instagram password.
+
+Use the current official Meta documentation to determine the correct OAuth flow, API version, permissions, and media endpoints.
+
+Implement an admin Instagram Integration screen with:
+- Connection status
+- Connect Instagram button
+- OAuth callback handling
+- Authorized account details
+- Last successful sync timestamp
+- Sync Now button
+- Disconnect button
+- Sync error reporting
+- Media count
+- Pagination status
+
+Backend requirements:
+- Store client secrets in environment variables.
+- Keep access tokens server-side.
+- Protect stored tokens using a suitable encryption strategy and key management.
+- Implement OAuth state validation and redirect URI validation.
+- Verify authorization responses.
+- Handle token expiry, refresh or reauthorization where supported, revoked permissions, rate limits, pagination, and API errors.
+- Log operational errors without logging access tokens or secrets.
+- Cache media metadata in MongoDB to avoid repeated API requests.
+- Implement an incremental sync that updates existing media and records new media without creating duplicates.
+- Use a background job for scheduled synchronization where appropriate.
+
+Instagram media functionality:
+- Retrieve authorized account media supported by the official API.
+- Display available images, video posts, and Reels on the public website.
+- Store supported metadata such as caption, media type, thumbnail or media URL when available, permalink, timestamp, and media identifier.
+- Support pagination and loading older available media from the API.
+- Display the original Instagram link for each item.
+- Allow the admin to choose whether synced media is displayed publicly.
+- Let the admin select featured Instagram posts.
+- Handle deleted, inaccessible, or unsupported media gracefully.
+
+Do not assume every historic item or media type will be accessible. Only display what the authorized API actually provides.
+
+If the Instagram API is not configured, the landing page must still work. Show a professional disconnected state in the admin and allow manual Instagram links or approved embeds as a fallback.
+
+The Instagram profile username should be configurable through admin settings. Do not hardcode a potentially incorrect account URL.
+
+Provide a step-by-step setup guide explaining how to configure the Meta developer app, redirect URI, required account type, approved permissions, and environment variables.
+
+# PHASE 11 — WEBSITE SETTINGS AND MEDIA MANAGEMENT
+
+Build admin settings for:
+- Website name
+- Logo and favicon
+- Creator profile image
+- Short brand description
+- Instagram profile URL
+- WhatsApp community URLs
+- Social media URLs
+- Homepage featured content
+- Homepage statistics
+- SEO defaults
+- Contact details
+- Email configuration status
+- Instagram integration configuration status
+
+Implement safe image uploads with file type validation, file-size limits, random filenames, and appropriate access controls.
+
+Use an image-storage abstraction that supports local development and a production provider such as Cloudinary or S3-compatible storage. Do not store large image binaries as base64 in MongoDB.
+
+Never expose storage credentials to the browser.
+
+# PHASE 12 — BACKEND ARCHITECTURE
+
+Use a maintainable project structure such as:
+
+client/
+  src/
+    components/
+    layouts/
+    pages/
+    features/
+    hooks/
+    services/
+    types/
+    utils/
+
+server/
+  src/
+    config/
+    models/
+    routes/
+    controllers/
+    services/
+    middleware/
+    validators/
+    jobs/
+    sockets/
+    utils/
+
+shared/
+  types/
+
+Provide clear separation between route handlers, business logic, data access, validation, and integration services.
+
+Create documented REST API endpoints for:
+- Authentication
+- User profile
+- Public website settings
+- Public blogs
+- Admin blog CRUD
+- Public prompts
+- Admin prompt CRUD
+- Categories and tags
+- Enquiries
+- Notifications
+- Admin user management
+- Media uploads
+- Instagram OAuth and sync
+- Admin dashboard summaries
+
+Use appropriate HTTP status codes, consistent response formats, pagination metadata, and meaningful error messages.
+
+Implement:
+- Centralized Express error handling
+- Request validation
+- CORS allowlisting
+- Helmet security headers
+- Authentication and role middleware
+- Rate limiting
+- Request size limits
+- Sanitization of rich text and user inputs
+- Secure environment configuration
+- Audit logging for sensitive admin actions
+
+Protect admin endpoints on the backend, not just by hiding frontend routes.
+
+# PHASE 13 — MONGODB DATA MODELS
+
+Create suitable Mongoose schemas and indexes for:
+
+User
+BlogPost
+Prompt
+Category
+Tag
+Enquiry
+Notification
+WebsiteSettings
+InstagramAccount
+InstagramMedia
+MediaAsset
+AuditLog
+
+Use correct references, unique constraints, timestamps, and indexes for common search queries.
+
+For BlogPost include draft/published/scheduled status, slug, author, content, SEO fields, categories, tags, featured image and scheduling fields.
+
+For Prompt include slug, title, prompt body, category, tags, recommended tool, media preview, language and publication status.
+
+For InstagramMedia, ensure the unique external media identifier prevents duplicate sync records.
+
+Add pagination, indexes and safe deletion policies. Where account data or audit history must be preserved, use appropriate retention or soft-delete strategies.
+
+# PHASE 14 — SECURITY AND PRIVACY
+
+Treat security as a core requirement.
+
+Implement:
+- Password hashing
+- Secure sessions or properly designed token authentication
+- Backend authorization
+- Login and password-reset throttling
+- Input and file-upload validation
+- Safe rich-text rendering
+- NoSQL injection defenses
+- CSRF protection where applicable to the selected cookie/auth architecture
+- Secret management through environment variables
+- HTTPS configuration guidance
+- Privacy Policy and Terms pages
+- Account deletion and data-retention handling
+- Protection against exposing user data through API responses
+- Audit logging for sensitive admin operations
+
+Create .env.example files containing placeholders only.
+
+Never commit real credentials, API tokens, MongoDB passwords, SMTP passwords, or production secrets.
+
+Do not seed fake users into production or expose a default admin password.
+
+# PHASE 15 — SEO, PERFORMANCE AND ACCESSIBILITY
+
+Implement:
+- Unique page titles and meta descriptions
+- Canonical URLs
+- Open Graph metadata
+- Sitemap.xml
+- robots.txt
+- Article structured data where appropriate
+- Clean slugs
+- Semantic HTML
+- Lazy loading for content images
+- Responsive image handling
+- Efficient database queries
+- API pagination
+- Proper loading skeletons
+- Error boundaries
+- Accessible forms
+- Keyboard navigation
+- Reduced-motion support
+
+Ensure each public blog and prompt page can be opened directly, refreshed, and shared using its own URL.
+
+Use a deployment strategy that supports client-side routing and server API routes without breaking refreshes.
+
+# PHASE 16 — DEVELOPMENT WORKFLOW
+
+Execute the work in these phases:
+
+Step 1: Inspect the existing files and report the current architecture briefly.
+
+Step 2: Establish the project structure, TypeScript configuration, design tokens, environment configuration and package scripts.
+
+Step 3: Build the complete public UI using reusable glassmorphism components.
+
+Step 4: Build the Express server, MongoDB connection, schemas, validation, centralized errors and health-check endpoint.
+
+Step 5: Implement signup, login, logout, password reset, authorization and initial-admin seeding.
+
+Step 6: Implement admin dashboard, dashboard statistics, user management, settings and audit logging.
+
+Step 7: Implement the rich-text blog CMS and verify draft, preview, publish, edit, schedule and unpublish workflows.
+
+Step 8: Implement prompt management and all public prompt browsing features.
+
+Step 9: Implement enquiry storage and admin enquiry management.
+
+Step 10: Implement notification persistence, unread counts and real-time updates where configured.
+
+Step 11: Implement the official Instagram OAuth and media synchronization integration, including fallback mode.
+
+Step 12: Implement media storage, SEO, accessibility, security checks and deployment configuration.
+
+Step 13: Run frontend and backend tests, fix build errors, verify APIs and test key workflows.
+
+Do not stop after describing these steps. Execute them in the repository.
+
+# PHASE 17 — TESTING AND ACCEPTANCE CRITERIA
+
+The project is complete only when the following workflows are verified:
+
+1. The React frontend builds successfully.
+2. The Express server starts and connects to MongoDB.
+3. A new user can register, log in, log out, and reset their password through the configured flow.
+4. A normal user cannot access protected admin APIs.
+5. An authorized admin can view and manage users.
+6. An admin can create, save, preview, publish, edit, schedule and unpublish a blog.
+7. Public blog listings update from the database without code changes.
+8. Every published blog has a working direct URL.
+9. An admin can create and update prompts in all required categories.
+10. Prompt search, filters, pagination and copy-to-clipboard work.
+11. An enquiry can be submitted, saved, viewed and processed from the admin dashboard.
+12. New-user and enquiry notifications are stored correctly.
+13. The notification unread count updates as expected.
+14. Instagram integration supports the configured authorized account and gracefully handles disconnection or API failures.
+15. Media sync avoids creating duplicates.
+16. Admin credentials and secrets are never exposed to the browser.
+17. Desktop, tablet and mobile layouts work properly.
+18. Privacy Policy and Terms links work.
+19. No critical buttons, navigation items, forms or CRUD actions are decorative or non-functional.
+20. The README contains complete local setup, database setup, environment configuration, testing, deployment and third-party integration instructions.
+
+# REQUIRED FINAL DELIVERABLES
+
+Provide:
+- Complete source code
+- Frontend and backend configuration
+- MongoDB schemas
+- Environment example files
+- Admin seeding command
+- API route documentation
+- Automated tests
+- README.md
+- Database setup instructions
+- Instagram integration guide
+- SMTP and media-storage configuration guide
+- Deployment instructions
+- A clear list of features that are complete and integrations that still require external approval or credentials
+
+If a test fails, fix it and rerun it. Never claim a feature was tested or completed without actually verifying it.
+
+Start by inspecting the repository and then implement the project step by step. Continue beyond planning and deliver working code.

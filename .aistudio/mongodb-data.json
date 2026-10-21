@@ -1,0 +1,1326 @@
+{
+  "users": [
+    {
+      "id": "usr-1792511103940-1c88",
+      "name": "Meera Nair",
+      "email": "member.1792511103804@example.com",
+      "passwordHash": "$2b$10$1ql4qxRzxn9893ZOnxPrsulWxEQ3AFChH8bOB7KkeIQZ7oIXkkzne",
+      "role": "User",
+      "status": "Active",
+      "avatarUrl": "",
+      "bio": "Community Member at Keerthi_dot_exe",
+      "emailVerified": false,
+      "notificationPreferences": {
+        "featuredBlogs": true,
+        "newPrompts": true,
+        "communityAnnouncements": true
+      },
+      "lastLoginAt": "2026-10-20T15:45:03.940Z",
+      "createdAt": "2026-10-20T15:45:03.940Z",
+      "updatedAt": "2026-10-20T15:45:04.069Z"
+    },
+    {
+      "id": "usr-admin-1",
+      "name": "Keerthi (Admin)",
+      "email": "admin@keerthidotexe.com",
+      "passwordHash": "$2b$10$hJxcmZXKszJcMvntgGrOUuy5h9eqMNd9YB5PsqXPKiHm/c.1Cj7.2",
+      "role": "Admin",
+      "status": "Active",
+      "avatarUrl": "/assets/media/keerthi-avatar.png",
+      "bio": "Founder of Keerthi_dot_exe · AI Creative Community (41K+ Instagram Family)",
+      "emailVerified": true,
+      "notificationPreferences": {
+        "featuredBlogs": true,
+        "newPrompts": true,
+        "communityAnnouncements": true
+      },
+      "lastLoginAt": "2026-10-20T17:13:18.566Z",
+      "createdAt": "2026-01-10T08:00:00.000Z",
+      "updatedAt": "2026-10-19T10:00:00.000Z"
+    },
+    {
+      "id": "usr-member-1",
+      "name": "Ananya Sundaram",
+      "email": "ananya.creator@example.com",
+      "passwordHash": "$2b$10$5WRA99fM0H1tsHQvrP2uIerLCvVRp3jHHhGwxr5pxwOolBJZO/NG2",
+      "role": "User",
+      "status": "Active",
+      "avatarUrl": "/assets/media/keerthi-about.png",
+      "bio": "Brand designer exploring Flux & Midjourney prompts for D2C brands.",
+      "emailVerified": true,
+      "notificationPreferences": {
+        "featuredBlogs": true,
+        "newPrompts": true,
+        "communityAnnouncements": true
+      },
+      "lastLoginAt": "2026-10-18T15:30:00.000Z",
+      "createdAt": "2026-08-14T11:20:00.000Z",
+      "updatedAt": "2026-10-18T15:30:00.000Z"
+    },
+    {
+      "id": "usr-member-2",
+      "name": "Raghav Menon",
+      "email": "raghav.studio@example.com",
+      "passwordHash": "$2b$10$5WRA99fM0H1tsHQvrP2uIerLCvVRp3jHHhGwxr5pxwOolBJZO/NG2",
+      "role": "User",
+      "status": "Active",
+      "bio": "Motion designer & Reels creator.",
+      "emailVerified": true,
+      "notificationPreferences": {
+        "featuredBlogs": true,
+        "newPrompts": false,
+        "communityAnnouncements": true
+      },
+      "lastLoginAt": "2026-10-17T09:15:00.000Z",
+      "createdAt": "2026-09-02T14:00:00.000Z",
+      "updatedAt": "2026-10-17T09:15:00.000Z"
+    }
+  ],
+  "blogs": [
+    {
+      "id": "blog-1",
+      "title": "Top 10 Free AI Image Generators in 2026",
+      "slug": "top-10-free-ai-image-generators-in-2026",
+      "excerpt": "A hands-on comparison of the best free and freemium AI image generators in 2026—covering photorealism, typography accuracy, Indian cultural nuances, and commercial licensing.",
+      "featuredImage": "/assets/media/blog-ai-generators.png",
+      "imageAlt": "Porcelain bionic AI portrait representing 2026 image generation models",
+      "category": "AI Tools",
+      "tags": [
+        "AI Tools",
+        "Image Generation",
+        "Flux",
+        "Ideogram"
+      ],
+      "featured": true,
+      "status": "Published",
+      "publishAt": "2026-10-15T09:00:00.000Z",
+      "publishedAt": "2026-10-15T09:00:00.000Z",
+      "relatedPromptSlugs": [
+        "translucent-pearl-glass-portrait-lighting",
+        "futuristic-bionic-ai-assistant-editorial-cover"
+      ],
+      "relatedBlogSlugs": [
+        "how-to-create-viral-whatsapp-status-with-ai",
+        "complete-guide-to-comfyui-for-ai-creators"
+      ],
+      "views": 4821,
+      "content": "<h2>Why Choosing the Right Generator Matters in 2026</h2>\n<p>AI image generation has evolved from experimental art into a daily production powerhouse for creators, small businesses, and social media managers. Whether you are designing a festival poster, a clean WhatsApp status, or a brand mockup, choosing the right model saves hours of editing.</p>\n<div class=\"callout-box\"><strong>Quick Creator Tip:</strong> Match your model to your goal—use <em>Flux.1</em> for photorealistic skin and lighting, and <em>Ideogram 2.0</em> when you need flawless embedded typography.</div>\n<h2>1. Flux.1 Dev & Schnell (Best for Photorealism)</h2>\n<p>Flux has redefined studio portrait and product photography fidelity. Its adherence to complex lighting prompts and hand anatomy makes it our #1 recommendation for the Keerthi_dot_exe community.</p>\n<h3>Sample Studio Prompt You Can Copy</h3>\n<pre class=\"prompt-block\">Editorial studio portrait of an Indian creative director, framed by translucent frosted glass panels, soft lavender and cyan rim lighting, clean pearl-white background, 85mm f/1.4 --ar 4:5</pre>\n<h2>2. Ideogram 2.0 (Best for Posters & Typography)</h2>\n<p>When creating restaurant posters, event invitations, or quote cards, spelling accuracy is critical. Ideogram 2.0 handles multi-line headlines, badges, and clean vector layouts effortlessly.</p>\n<h2>3. Leonardo Phoenix & Playground v3</h2>\n<p>Both platforms offer generous daily free tiers with built-in canvas upscalers and style reference controls, making them ideal for beginners starting their creative journey.</p>",
+      "author": {
+        "id": "usr-admin-1",
+        "name": "Keerthi",
+        "avatarUrl": "/assets/media/keerthi-avatar.png",
+        "role": "AI Creator & Founder"
+      },
+      "seoTitle": "Top 10 Free AI Image Generators in 2026 | Keerthi_dot_exe",
+      "metaDescription": "A hands-on comparison of the best free and freemium AI image generators in 2026—covering photorealism, typography accuracy, Indian cultural nuances, and commercial licensing.",
+      "canonicalUrl": "https://keerthidotexe.com/blog/top-10-free-ai-image-generators-in-2026",
+      "ogImage": "/assets/media/blog-ai-generators.png",
+      "wordCount": 206,
+      "readingTimeMinutes": 2,
+      "createdAt": "2026-10-15T09:00:00.000Z",
+      "updatedAt": "2026-10-15T09:00:00.000Z"
+    },
+    {
+      "id": "blog-2",
+      "title": "How to Create Viral WhatsApp Status with AI",
+      "slug": "how-to-create-viral-whatsapp-status-with-ai",
+      "excerpt": "Step-by-step workflow to design aesthetic 9:16 vertical portraits, Tamil & English quote cards, and animated status loops that stand out.",
+      "featuredImage": "/assets/media/blog-whatsapp-status.png",
+      "imageAlt": "Keerthi creator portrait demonstrating viral WhatsApp status aesthetics",
+      "category": "Tutorial",
+      "tags": [
+        "Tutorial",
+        "WhatsApp Status",
+        "Social Media",
+        "Prompts"
+      ],
+      "featured": true,
+      "status": "Published",
+      "publishAt": "2026-10-12T09:00:00.000Z",
+      "publishedAt": "2026-10-12T09:00:00.000Z",
+      "relatedPromptSlugs": [
+        "viral-golden-hour-whatsapp-status-quote",
+        "viral-instagram-reel-hook-cover-template"
+      ],
+      "relatedBlogSlugs": [
+        "top-10-free-ai-image-generators-in-2026",
+        "best-ai-video-tools-for-beginners"
+      ],
+      "views": 3910,
+      "content": "<h2>The Anatomy of a Share-Worthy 9:16 Status</h2>\n<p>In our AI Status Studio WhatsApp community, we analyzed over 500 high-performing status updates. Three elements consistently win: <strong>vertical 9:16 framing</strong>, <strong>soft atmospheric lighting</strong>, and <strong>uncluttered typography placement</strong>.</p>\n<h2>Step 1: Always Lock Your Aspect Ratio</h2>\n<p>Never crop a square image for WhatsApp status. Always append <code>--ar 9:16</code> or select the 1024x1792 portrait resolution so your composition breathes vertically.</p>\n<h2>Step 2: Use Frosted Glass Quote Containers</h2>\n<pre class=\"prompt-block\">Vertical 9:16 golden hour coastal scene, translucent frosted glass card in the center reading \"Create every single day\" in clean sans-serif typography, soft pastel bokeh --ar 9:16</pre>\n<h2>Step 3: Animate Subtle Motion for 6-Second Loops</h2>\n<p>Take your static image into Kling AI or Runway Gen-3 and prompt ONLY for ambient motion: <em>\"subtle breeze moving hair and warm bokeh particles drifting slowly, locked camera.\"</em></p>",
+      "author": {
+        "id": "usr-admin-1",
+        "name": "Keerthi",
+        "avatarUrl": "/assets/media/keerthi-avatar.png",
+        "role": "AI Creator & Founder"
+      },
+      "seoTitle": "How to Create Viral WhatsApp Status with AI | Keerthi_dot_exe",
+      "metaDescription": "Step-by-step workflow to design aesthetic 9:16 vertical portraits, Tamil & English quote cards, and animated status loops that stand out.",
+      "canonicalUrl": "https://keerthidotexe.com/blog/how-to-create-viral-whatsapp-status-with-ai",
+      "ogImage": "/assets/media/blog-whatsapp-status.png",
+      "wordCount": 138,
+      "readingTimeMinutes": 1,
+      "createdAt": "2026-10-12T09:00:00.000Z",
+      "updatedAt": "2026-10-12T09:00:00.000Z"
+    },
+    {
+      "id": "blog-3",
+      "title": "Best AI Video Tools for Beginners",
+      "slug": "best-ai-video-tools-for-beginners",
+      "excerpt": "Master image-to-video generation using Runway Gen-3, Kling AI, Luma Dream Machine, and Pika without complex hardware.",
+      "featuredImage": "/assets/media/blog-video-tools.png",
+      "imageAlt": "Cinematic neon studio scene generated with AI video tools",
+      "category": "Business",
+      "tags": [
+        "AI Video",
+        "Reels",
+        "Runway",
+        "Kling"
+      ],
+      "featured": false,
+      "status": "Published",
+      "publishAt": "2026-10-10T09:00:00.000Z",
+      "publishedAt": "2026-10-10T09:00:00.000Z",
+      "relatedPromptSlugs": [
+        "cinematic-cyberpunk-alley-camera-tracking-reel"
+      ],
+      "relatedBlogSlugs": [
+        "top-10-free-ai-image-generators-in-2026",
+        "how-to-create-viral-whatsapp-status-with-ai"
+      ],
+      "views": 2740,
+      "content": "<h2>Why Image-to-Video Beats Text-to-Video</h2>\n<p>Beginners often type a text prompt directly into a video generator and get unpredictable visuals. The secret used by top AI creators is simple: <strong>generate your hero frame as an image first</strong>, then animate it using Image-to-Video.</p>\n<h2>Camera Motion Keywords That Actually Work</h2>\n<ul>\n<li><strong>Slow Push-In:</strong> Focuses viewer attention on a product or portrait.</li>\n<li><strong>Orbit 15 Degrees:</strong> Adds 3D parallax around food or footwear ads.</li>\n<li><strong>Handheld Documentary:</strong> Creates organic, realistic lifestyle movement.</li>\n</ul>",
+      "author": {
+        "id": "usr-admin-1",
+        "name": "Keerthi",
+        "avatarUrl": "/assets/media/keerthi-avatar.png",
+        "role": "AI Creator & Founder"
+      },
+      "seoTitle": "Best AI Video Tools for Beginners | Keerthi_dot_exe",
+      "metaDescription": "Master image-to-video generation using Runway Gen-3, Kling AI, Luma Dream Machine, and Pika without complex hardware.",
+      "canonicalUrl": "https://keerthidotexe.com/blog/best-ai-video-tools-for-beginners",
+      "ogImage": "/assets/media/blog-video-tools.png",
+      "wordCount": 76,
+      "readingTimeMinutes": 1,
+      "createdAt": "2026-10-10T09:00:00.000Z",
+      "updatedAt": "2026-10-10T09:00:00.000Z"
+    },
+    {
+      "id": "blog-4",
+      "title": "Business Poster Design Prompts that Work",
+      "slug": "business-poster-design-prompts-that-work",
+      "excerpt": "Proven prompt formulas for cafés, boutiques, electronics stores, and personal brands to create agency-grade promotional posters in minutes.",
+      "featuredImage": "/assets/media/blog-business-posters.png",
+      "imageAlt": "Commercial gourmet burger advertisement poster created with AI",
+      "category": "Prompts",
+      "tags": [
+        "Business",
+        "Poster Design",
+        "Marketing",
+        "Food Ad"
+      ],
+      "featured": false,
+      "status": "Published",
+      "publishAt": "2026-10-08T09:00:00.000Z",
+      "publishedAt": "2026-10-08T09:00:00.000Z",
+      "relatedPromptSlugs": [
+        "gourmet-burger-commercial-poster-typography",
+        "diwali-pongal-royal-festive-brand-greeting-poster"
+      ],
+      "relatedBlogSlugs": [
+        "top-10-free-ai-image-generators-in-2026"
+      ],
+      "views": 3190,
+      "content": "<h2>Designing for Conversion, Not Just Aesthetics</h2>\n<p>A business poster needs hierarchy: a hero product shot, negative space for your offer headline, and lighting that matches your brand mood.</p>\n<h2>The 4-Part Commercial Poster Formula</h2>\n<ol>\n<li><strong>Hero Subject & Angle:</strong> e.g., 45-degree macro shot of artisan cold brew coffee.</li>\n<li><strong>Surface & Environment:</strong> e.g., resting on wet travertine stone with condensation droplets.</li>\n<li><strong>Lighting & Palette:</strong> e.g., warm golden rim lighting against dark slate.</li>\n<li><strong>Negative Space Instruction:</strong> e.g., clean uncluttered upper-left quadrant for typography.</li>\n</ol>",
+      "author": {
+        "id": "usr-admin-1",
+        "name": "Keerthi",
+        "avatarUrl": "/assets/media/keerthi-avatar.png",
+        "role": "AI Creator & Founder"
+      },
+      "seoTitle": "Business Poster Design Prompts that Work | Keerthi_dot_exe",
+      "metaDescription": "Proven prompt formulas for cafés, boutiques, electronics stores, and personal brands to create agency-grade promotional posters in minutes.",
+      "canonicalUrl": "https://keerthidotexe.com/blog/business-poster-design-prompts-that-work",
+      "ogImage": "/assets/media/blog-business-posters.png",
+      "wordCount": 79,
+      "readingTimeMinutes": 1,
+      "createdAt": "2026-10-08T09:00:00.000Z",
+      "updatedAt": "2026-10-08T09:00:00.000Z"
+    },
+    {
+      "id": "blog-5",
+      "title": "Complete Guide to ComfyUI for AI Creators",
+      "slug": "complete-guide-to-comfyui-for-ai-creators",
+      "excerpt": "Demystifying node-based AI workflows: how to set up SDXL, Flux, ControlNet, and IC-Light for repeatable studio control.",
+      "featuredImage": "/assets/media/blog-comfyui-guide.png",
+      "imageAlt": "Luxury hypercar twilight render built with ComfyUI ControlNet pipeline",
+      "category": "Tips",
+      "tags": [
+        "ComfyUI",
+        "Tutorial",
+        "ControlNet",
+        "Workflow"
+      ],
+      "featured": false,
+      "status": "Published",
+      "publishAt": "2026-10-05T09:00:00.000Z",
+      "publishedAt": "2026-10-05T09:00:00.000Z",
+      "relatedPromptSlugs": [
+        "comfyui-sdxl-controlnet-lighting-workflow-prompt",
+        "automotive-twilight-wet-asphalt-commercial"
+      ],
+      "relatedBlogSlugs": [
+        "top-10-free-ai-image-generators-in-2026"
+      ],
+      "views": 2150,
+      "content": "<h2>Why Move to Node-Based Workflows?</h2>\n<p>While web generators are great for quick ideation, ComfyUI lets you lock pose, depth, lighting, and brand colors across an entire 20-image campaign without losing consistency.</p>\n<h2>Essential Nodes Every Creator Should Install</h2>\n<p>Start with ComfyUI Manager, ControlNet Auxiliary Preprocessors, IPAdapter Plus for style transfer, and IC-Light for studio relighting.</p>",
+      "author": {
+        "id": "usr-admin-1",
+        "name": "Keerthi",
+        "avatarUrl": "/assets/media/keerthi-avatar.png",
+        "role": "AI Creator & Founder"
+      },
+      "seoTitle": "Complete Guide to ComfyUI for AI Creators | Keerthi_dot_exe",
+      "metaDescription": "Demystifying node-based AI workflows: how to set up SDXL, Flux, ControlNet, and IC-Light for repeatable studio control.",
+      "canonicalUrl": "https://keerthidotexe.com/blog/complete-guide-to-comfyui-for-ai-creators",
+      "ogImage": "/assets/media/blog-comfyui-guide.png",
+      "wordCount": 54,
+      "readingTimeMinutes": 1,
+      "createdAt": "2026-10-05T09:00:00.000Z",
+      "updatedAt": "2026-10-05T09:00:00.000Z"
+    },
+    {
+      "id": "blog-6",
+      "title": "Consistent Character Storytelling Across 10 Scenes (Draft)",
+      "slug": "consistent-character-storytelling-across-10-scenes",
+      "excerpt": "Internal draft covering multi-angle character sheets and seed locking for animated AI short films.",
+      "featuredImage": "/assets/media/keerthi-about.png",
+      "imageAlt": "Consistent character sheet workflow preview",
+      "category": "Tutorial",
+      "tags": [
+        "Character Consistency",
+        "Storytelling",
+        "Midjourney"
+      ],
+      "featured": false,
+      "status": "Draft",
+      "publishAt": "2026-10-25T09:00:00.000Z",
+      "relatedPromptSlugs": [
+        "translucent-pearl-glass-portrait-lighting"
+      ],
+      "relatedBlogSlugs": [
+        "top-10-free-ai-image-generators-in-2026"
+      ],
+      "views": 0,
+      "content": "<h2>Draft Notes: Character Consistency</h2><p>Exploring --cref and Omni-Reference weight tuning for narrative reels.</p>",
+      "author": {
+        "id": "usr-admin-1",
+        "name": "Keerthi",
+        "avatarUrl": "/assets/media/keerthi-avatar.png",
+        "role": "AI Creator & Founder"
+      },
+      "seoTitle": "Consistent Character Storytelling Across 10 Scenes (Draft) | Keerthi_dot_exe",
+      "metaDescription": "Internal draft covering multi-angle character sheets and seed locking for animated AI short films.",
+      "canonicalUrl": "https://keerthidotexe.com/blog/consistent-character-storytelling-across-10-scenes",
+      "ogImage": "/assets/media/keerthi-about.png",
+      "wordCount": 13,
+      "readingTimeMinutes": 1,
+      "createdAt": "2026-10-25T09:00:00.000Z",
+      "updatedAt": "2026-10-25T09:00:00.000Z"
+    }
+  ],
+  "prompts": [
+    {
+      "title": "Translucent Pearl Glass Portrait Lighting",
+      "slug": "translucent-pearl-glass-portrait-lighting",
+      "shortDescription": "Soft studio portrait surrounded by iridescent frosted glass shapes and pastel lavender rim lighting.",
+      "promptText": "Editorial studio portrait of an Indian creative director smiling warmly, soft natural skin texture, framed by floating translucent frosted acrylic glass panels and subtle iridescent pearl spheres, soft lavender and sky-blue rim lighting, clean pearl-white background (#F8F9FC), shot on 85mm f/1.4 lens, shallow depth of field, ultra-clean commercial photography --ar 4:5 --v 6.1 --style raw",
+      "category": "Aesthetic Portraits",
+      "tags": [
+        "Portrait",
+        "Glassmorphism",
+        "Midjourney",
+        "Studio Lighting"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/keerthi-hero.png",
+      "recommendedModel": "Midjourney v6.1 / Flux.1 Dev",
+      "externalToolUrl": "https://www.midjourney.com",
+      "usageInstructions": "Replace the subject description with your own outfit or pose. Keep --style raw for natural skin texture.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": true,
+      "status": "Published",
+      "copiesCount": 1420,
+      "id": "prm-1",
+      "createdAt": "2026-10-01T10:00:00.000Z",
+      "updatedAt": "2026-10-01T10:00:00.000Z"
+    },
+    {
+      "title": "Gourmet Burger Commercial Poster with Bold Typography",
+      "slug": "gourmet-burger-commercial-poster-typography",
+      "shortDescription": "High-impact restaurant advertisement poster featuring dramatic warm backlighting and floating ingredients.",
+      "promptText": "Commercial food photography poster of a double smash cheeseburger on a toasted brioche bun, melted cheddar dripping, crisp lettuce, smoky charbroiled atmosphere, warm golden rim lighting, dark moody slate background with glowing embers, space at top-left for bold brand badge, 8k macro food styling, Phase One IQ4 150MP --ar 16:9",
+      "category": "Food and Restaurant Marketing",
+      "tags": [
+        "Food Ad",
+        "Restaurant",
+        "Poster Design",
+        "Flux"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-business-posters.png",
+      "recommendedModel": "Flux.1 Pro / Ideogram 2.0",
+      "externalToolUrl": "https://ideogram.ai",
+      "usageInstructions": "Use Ideogram 2.0 or Flux.1 Pro if you want crisp embedded price tags or offer headlines.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": true,
+      "status": "Published",
+      "copiesCount": 985,
+      "id": "prm-2",
+      "createdAt": "2026-10-02T10:00:00.000Z",
+      "updatedAt": "2026-10-02T10:00:00.000Z"
+    },
+    {
+      "title": "Viral Golden Hour Aesthetic WhatsApp Status Quote",
+      "slug": "viral-golden-hour-whatsapp-status-quote",
+      "shortDescription": "Vertical 9:16 atmospheric sunset silhouette with glowing glass quote card for daily WhatsApp status.",
+      "promptText": "Vertical 9:16 cinematic scene of a serene coastal cliff at golden hour, warm pastel violet and peach clouds reflecting on calm ocean water, minimalist translucent frosted glass card in the center reading \"Trust the timing of your creative journey\" in clean modern sans-serif typography, soft bokeh particles, peaceful aesthetic --ar 9:16",
+      "category": "WhatsApp Status",
+      "tags": [
+        "WhatsApp Status",
+        "9:16 Vertical",
+        "Quotes",
+        "Aesthetic"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-whatsapp-status.png",
+      "recommendedModel": "Ideogram 2.0 / DALL·E 3",
+      "externalToolUrl": "https://ideogram.ai",
+      "usageInstructions": "Customize the text inside quotes to match your morning or festival status message.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": true,
+      "status": "Published",
+      "copiesCount": 2310,
+      "id": "prm-3",
+      "createdAt": "2026-10-03T10:00:00.000Z",
+      "updatedAt": "2026-10-03T10:00:00.000Z",
+      "likesCount": 579
+    },
+    {
+      "title": "Cinematic Cyberpunk Alley Camera Tracking Reel",
+      "slug": "cinematic-cyberpunk-alley-camera-tracking-reel",
+      "shortDescription": "Smooth gimbal push-in video prompt with neon reflections and volumetric rain for Instagram Reels.",
+      "promptText": "Smooth low-angle steadicam push-in through a futuristic rain-slicked creative district at night, glowing violet and cyan holographic billboards reflecting in puddles, a lone digital artist in a minimalist trench coat walking toward a glass portal, 24fps anamorphic lens flare, realistic motion physics, 4k cinematic reel",
+      "category": "Video Generation",
+      "tags": [
+        "Reels",
+        "AI Video",
+        "Runway Gen-3",
+        "Kling AI"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-video-tools.png",
+      "recommendedModel": "Runway Gen-3 Alpha / Kling 1.5",
+      "externalToolUrl": "https://runwayml.com",
+      "usageInstructions": "Upload a starting keyframe image first for best character consistency across a 10-second generation.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": true,
+      "status": "Published",
+      "copiesCount": 870,
+      "id": "prm-4",
+      "createdAt": "2026-10-04T10:00:00.000Z",
+      "updatedAt": "2026-10-04T10:00:00.000Z"
+    },
+    {
+      "title": "Automotive Twilight Wet Asphalt Commercial",
+      "slug": "automotive-twilight-wet-asphalt-commercial",
+      "shortDescription": "Photorealistic luxury sports car commercial shot with crimson tail-light trails and wet reflections.",
+      "promptText": "Three-quarter rear angle of a matte midnight-blue electric hypercar parked on wet urban asphalt at blue hour, glowing LED crimson tail light strip reflecting on wet pavement, subtle mist, architectural glass towers in background, automotive commercial photography, 50mm f/1.8 --ar 16:9",
+      "category": "Product Advertisements",
+      "tags": [
+        "Automotive",
+        "Commercial",
+        "Product Ad",
+        "ComfyUI"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-comfyui-guide.png",
+      "recommendedModel": "ComfyUI SDXL + ControlNet",
+      "externalToolUrl": "https://github.com/comfyanonymous/ComfyUI",
+      "usageInstructions": "Pair with Canny ControlNet in ComfyUI if you want to preserve an exact vehicle silhouette.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": true,
+      "status": "Published",
+      "copiesCount": 640,
+      "id": "prm-5",
+      "createdAt": "2026-10-05T10:00:00.000Z",
+      "updatedAt": "2026-10-05T10:00:00.000Z"
+    },
+    {
+      "title": "Futuristic Bionic AI Assistant Editorial Cover",
+      "slug": "futuristic-bionic-ai-assistant-editorial-cover",
+      "shortDescription": "Clean porcelain-and-cobalt humanoid visual for tech blog covers and AI carousel headers.",
+      "promptText": "Close-up editorial portrait of a sleek porcelain-white humanoid AI figure with subtle sapphire optical sensors, soft studio key light and cyan rim light, deep navy-blue atmospheric backdrop with fine bokeh dust, WIRED magazine cover aesthetic, ultra-detailed 8k render --ar 16:9",
+      "category": "Image Generation",
+      "tags": [
+        "AI Art",
+        "Tech Cover",
+        "Midjourney",
+        "Editorial"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-ai-generators.png",
+      "recommendedModel": "Midjourney v6.1",
+      "externalToolUrl": "https://www.midjourney.com",
+      "usageInstructions": "Ideal for blog hero banners and YouTube thumbnail backgrounds.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": true,
+      "status": "Published",
+      "copiesCount": 1120,
+      "id": "prm-6",
+      "createdAt": "2026-10-06T10:00:00.000Z",
+      "updatedAt": "2026-10-06T10:00:00.000Z"
+    },
+    {
+      "title": "Founder LinkedIn & Instagram Personal Profile DP",
+      "slug": "founder-linkedin-instagram-personal-profile-dp",
+      "shortDescription": "Clean, approachable studio headshot prompt with soft pearl lighting for creator profile pictures.",
+      "promptText": "Professional 1:1 circular-safe studio portrait of a young creative entrepreneur wearing a smart casual cream knit sweater, warm genuine smile, soft diffused window light from 45 degrees, clean pearl-gray backdrop with subtle depth, Leica SL2 75mm Summilux --ar 1:1",
+      "category": "Personal Profile Pictures",
+      "tags": [
+        "DP",
+        "Profile Picture",
+        "Headshot",
+        "Creator Branding"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/keerthi-about.png",
+      "recommendedModel": "Flux.1 Dev / Midjourney v6.1",
+      "externalToolUrl": "https://www.midjourney.com",
+      "usageInstructions": "Use a 1:1 aspect ratio and keep the subject centered for circular social media crops.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": false,
+      "status": "Published",
+      "copiesCount": 790,
+      "id": "prm-7",
+      "createdAt": "2026-10-07T10:00:00.000Z",
+      "updatedAt": "2026-10-07T10:00:00.000Z"
+    },
+    {
+      "title": "SaaS Product Launch Social Media Carousel Kit",
+      "slug": "saas-product-launch-social-media-carousel-kit",
+      "shortDescription": "Minimalist frosted glass UI showcase card layout for Instagram and LinkedIn product announcements.",
+      "promptText": "Minimalist isometric presentation of a translucent frosted glass dashboard interface floating over a soft pearl-white surface, subtle lavender and cyan light refraction, crisp geometric layout, Apple design award aesthetic, 8k studio render --ar 4:5",
+      "category": "Business Prompts",
+      "tags": [
+        "Business",
+        "SaaS",
+        "Carousel",
+        "Glassmorphism"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-ai-generators.png",
+      "recommendedModel": "Midjourney v6.1",
+      "externalToolUrl": "https://www.midjourney.com",
+      "usageInstructions": "Overlay your product headline in Figma or Canva using Plus Jakarta Sans Bold.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": false,
+      "status": "Published",
+      "copiesCount": 530,
+      "id": "prm-8",
+      "createdAt": "2026-10-08T10:00:00.000Z",
+      "updatedAt": "2026-10-08T10:00:00.000Z"
+    },
+    {
+      "title": "Diwali & Pongal Royal Festive Brand Greeting Poster",
+      "slug": "diwali-pongal-royal-festive-brand-greeting-poster",
+      "shortDescription": "Warm brass lamps, marigold florals, and clean central space for brand festival greetings.",
+      "promptText": "Festive Indian celebration poster background featuring ornate brass diyas with warm glowing flames, fresh marigold garlands, subtle golden rangoli patterns on a cream silk surface, generous clean negative space in the center for brand logo and festive wishes, royal warm lighting --ar 4:5",
+      "category": "Festival Creatives",
+      "tags": [
+        "Festival",
+        "Diwali",
+        "Pongal",
+        "Indian Brands"
+      ],
+      "language": "English / Tamil",
+      "previewImage": "/assets/media/blog-business-posters.png",
+      "recommendedModel": "Ideogram 2.0 / Midjourney v6.1",
+      "externalToolUrl": "https://ideogram.ai",
+      "usageInstructions": "Add your shop or brand logo in the center negative space.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": false,
+      "status": "Published",
+      "copiesCount": 1180,
+      "id": "prm-9",
+      "createdAt": "2026-10-09T10:00:00.000Z",
+      "updatedAt": "2026-10-09T10:00:00.000Z"
+    },
+    {
+      "title": "3D Iridescent Glass Monogram Logo Mark",
+      "slug": "3d-iridescent-glass-monogram-logo-mark",
+      "shortDescription": "Sleek lettermark crafted from Dispersion glass with soft studio reflections on white.",
+      "promptText": "Minimalist 3D monogram letter \"K\" sculpted from clear frosted optical glass with subtle violet and cyan chromatic dispersion along the beveled edges, centered on a pure matte pearl-white background, studio softbox lighting, Octane Render 8k --ar 1:1",
+      "category": "Logo and Branding",
+      "tags": [
+        "Logo",
+        "3D Typography",
+        "Branding",
+        "Glass"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/keerthi-avatar.png",
+      "recommendedModel": "Ideogram 2.0 / Midjourney v6.1",
+      "externalToolUrl": "https://ideogram.ai",
+      "usageInstructions": "Change the letter \"K\" to your brand initial.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": false,
+      "status": "Published",
+      "copiesCount": 690,
+      "id": "prm-10",
+      "createdAt": "2026-10-10T10:00:00.000Z",
+      "updatedAt": "2026-10-10T10:00:00.000Z"
+    },
+    {
+      "title": "Viral Instagram Reel Hook Cover Template",
+      "slug": "viral-instagram-reel-hook-cover-template",
+      "shortDescription": "High-retention creator thumbnail composition with expressive lighting and clean headline zone.",
+      "promptText": "Vertical 9:16 creator thumbnail portrait, expressive engaged look pointing slightly upward toward top headline space, clean studio rim light in electric purple and cyan, uncluttered soft light background at top third for bold hook text --ar 9:16",
+      "category": "Social Media",
+      "tags": [
+        "Instagram Reels",
+        "Thumbnail",
+        "Creator Growth"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-whatsapp-status.png",
+      "recommendedModel": "Flux.1 Dev",
+      "externalToolUrl": "https://fal.ai",
+      "usageInstructions": "Keep the top 30% uncluttered so your Reel title remains legible in the profile grid.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": false,
+      "status": "Published",
+      "copiesCount": 845,
+      "id": "prm-11",
+      "createdAt": "2026-10-11T10:00:00.000Z",
+      "updatedAt": "2026-10-11T10:00:00.000Z"
+    },
+    {
+      "title": "ComfyUI SDXL ControlNet Lighting Workflow Prompt",
+      "slug": "comfyui-sdxl-controlnet-lighting-workflow-prompt",
+      "shortDescription": "Structured positive and negative prompt pair for consistent relighting in ComfyUI.",
+      "promptText": "Positive: masterpiece, studio product relighting, soft diffused key light from top-left, subtle cool rim light, crisp surface micro-texture, neutral color balance, 8k uhd\nNegative: overexposed highlights, harsh flat flash, blurry edges, watermark, oversaturated neon, plastic texture",
+      "category": "AI Tools and Tutorials",
+      "tags": [
+        "ComfyUI",
+        "SDXL",
+        "ControlNet",
+        "Workflow"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-comfyui-guide.png",
+      "recommendedModel": "ComfyUI + SDXL 1.0",
+      "externalToolUrl": "https://github.com/comfyanonymous/ComfyUI",
+      "usageInstructions": "Set CFG Scale to 5.5 and Euler a sampler at 28 steps with IC-Light node.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": false,
+      "status": "Published",
+      "copiesCount": 615,
+      "id": "prm-12",
+      "createdAt": "2026-10-12T10:00:00.000Z",
+      "updatedAt": "2026-10-12T10:00:00.000Z"
+    },
+    {
+      "title": "Minimalist Architectural Desk Setup Wallpaper",
+      "slug": "minimalist-architectural-desk-setup-wallpaper",
+      "shortDescription": "Clean daylight workspace with frosted glass accessories and ultra-wide monitor.",
+      "promptText": "Architectural photography of a minimalist white oak creator desk by a floor-to-ceiling frosted glass window, silver studio display, wireless mechanical keyboard, ceramic coffee cup, morning sunlight casting soft shadows, serene productivity aesthetic --ar 16:9",
+      "category": "Other",
+      "tags": [
+        "Wallpaper",
+        "Desk Setup",
+        "Minimalism"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-ai-generators.png",
+      "recommendedModel": "Midjourney v6.1",
+      "externalToolUrl": "https://www.midjourney.com",
+      "usageInstructions": "Use --ar 16:9 for desktop wallpapers or --ar 9:16 for phone lock screens.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": false,
+      "status": "Published",
+      "copiesCount": 410,
+      "id": "prm-13",
+      "createdAt": "2026-10-13T10:00:00.000Z",
+      "updatedAt": "2026-10-13T10:00:00.000Z"
+    },
+    {
+      "title": "Executive Brand Strategy & Pitch Deck Visual System",
+      "slug": "executive-brand-strategy-pitch-deck-visual-system",
+      "shortDescription": "Clean boardroom-ready B2B presentation cover and executive summary visual prompt in pearl-white glassmorphism.",
+      "promptText": "Minimalist executive presentation key visual, translucent frosted glass data cards floating above a warm alabaster podium, subtle amethyst and cobalt studio lighting, razor-sharp architectural geometry, modern enterprise keynote aesthetic, 8k render --ar 16:9",
+      "category": "Business",
+      "tags": [
+        "Business",
+        "Pitch Deck",
+        "Enterprise",
+        "Branding"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-business-posters.png",
+      "recommendedModel": "Midjourney v6.1 / Ideogram 2.0",
+      "externalToolUrl": "https://www.midjourney.com",
+      "usageInstructions": "Ideal for 16:9 investor decks, Notion headers, and LinkedIn company banners.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": true,
+      "status": "Published",
+      "copiesCount": 920,
+      "id": "prm-14",
+      "createdAt": "2026-10-14T10:00:00.000Z",
+      "updatedAt": "2026-10-14T10:00:00.000Z"
+    },
+    {
+      "title": "Surreal Chromatic Glass Sculpture Fine Art Study",
+      "slug": "surreal-chromatic-glass-sculpture-fine-art-study",
+      "shortDescription": "Museum-grade fine art digital sculpture blending iridescent blown glass, liquid silver, and botanical forms.",
+      "promptText": "Contemporary digital fine art sculpture of a blooming lotus crafted from hand-blown dichroic optical glass and liquid mercury, suspended in a sunlit white gallery space, rainbow caustic light projections across a matte travertine plinth, Phase One XF IQ4 150MP --ar 4:5",
+      "category": "Art",
+      "tags": [
+        "Art",
+        "Digital Sculpture",
+        "Glassmorphism",
+        "Fine Art"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/keerthi-hero.png",
+      "recommendedModel": "Midjourney v6.1 / Flux.1 Pro",
+      "externalToolUrl": "https://www.midjourney.com",
+      "usageInstructions": "Use --stylize 350 in Midjourney v6.1 for rich chromatic light refraction.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": true,
+      "status": "Published",
+      "copiesCount": 1140,
+      "id": "prm-15",
+      "createdAt": "2026-10-15T10:00:00.000Z",
+      "updatedAt": "2026-10-15T10:00:00.000Z"
+    },
+    {
+      "title": "Full-Stack TypeScript & React Clean Architecture Copilot Prompt",
+      "slug": "full-stack-typescript-react-clean-architecture-prompt",
+      "shortDescription": "Structured system prompt for generating production-grade TypeScript, React 19, Zod validation, and REST API modules.",
+      "promptText": "Act as a Principal Full-Stack TypeScript Engineer. Design a modular feature using React 19 functional components, strict TypeScript interfaces, Zod request/response schema validation, and decoupled pure domain functions with native node:test unit tests. Return clean, zero-any code with explicit error states and accessible ARIA semantics.",
+      "category": "Coding",
+      "tags": [
+        "Coding",
+        "TypeScript",
+        "React",
+        "Developer Workflow"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-comfyui-guide.png",
+      "recommendedModel": "Gemini 2.5 Pro / Claude / GPT-4o",
+      "externalToolUrl": "https://aistudio.google.com",
+      "usageInstructions": "Paste as your system instruction before describing your feature requirements and API contract.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": true,
+      "status": "Published",
+      "copiesCount": 1310,
+      "id": "prm-16",
+      "createdAt": "2026-10-16T10:00:00.000Z",
+      "updatedAt": "2026-10-16T10:00:00.000Z"
+    },
+    {
+      "title": "High-Converting Omnichannel Growth Marketing Campaign Kit",
+      "slug": "high-converting-omnichannel-growth-marketing-campaign-kit",
+      "shortDescription": "Scroll-stopping D2C performance marketing visual and hook framework for Instagram, Meta Ads, and WhatsApp broadcasts.",
+      "promptText": "High-converting commercial D2C ad creative featuring a hero product centered on a glossy acrylic pedestal, dynamic floating callout badges in frosted glass, vibrant electric violet and cyan accent rim lighting, high-contrast studio background engineered for mobile feed thumb-stop rate --ar 4:5",
+      "category": "Marketing",
+      "tags": [
+        "Marketing",
+        "Meta Ads",
+        "D2C Growth",
+        "Social Media"
+      ],
+      "language": "English",
+      "previewImage": "/assets/media/blog-product-ads.png",
+      "recommendedModel": "Ideogram 2.0 / Flux.1 Dev",
+      "externalToolUrl": "https://ideogram.ai",
+      "usageInstructions": "Pair with a 3-word value proposition in the top 20% safe zone for Instagram and Facebook feed ads.",
+      "authorName": "Keerthi_dot_exe",
+      "featured": true,
+      "status": "Published",
+      "copiesCount": 1065,
+      "id": "prm-17",
+      "createdAt": "2026-10-17T10:00:00.000Z",
+      "updatedAt": "2026-10-17T10:00:00.000Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "AI Tools",
+      "slug": "ai-tools",
+      "type": "blog",
+      "description": "Reviews and comparisons of AI generators",
+      "count": 2
+    },
+    {
+      "id": "cat-2",
+      "name": "Tutorial",
+      "slug": "tutorial",
+      "type": "blog",
+      "description": "Step-by-step creative workflows",
+      "count": 2
+    },
+    {
+      "id": "cat-3",
+      "name": "Business",
+      "slug": "business",
+      "type": "both",
+      "description": "Commercial branding and marketing",
+      "count": 3
+    },
+    {
+      "id": "cat-4",
+      "name": "Prompts",
+      "slug": "prompts",
+      "type": "both",
+      "description": "Curated prompt engineering formulas",
+      "count": 4
+    },
+    {
+      "id": "cat-5",
+      "name": "Tips",
+      "slug": "tips",
+      "type": "blog",
+      "description": "Pro tips for ComfyUI and lighting",
+      "count": 1
+    }
+  ],
+  "tags": [
+    {
+      "id": "tag-1",
+      "name": "Midjourney",
+      "slug": "midjourney",
+      "count": 6
+    },
+    {
+      "id": "tag-2",
+      "name": "WhatsApp Status",
+      "slug": "whatsapp-status",
+      "count": 3
+    },
+    {
+      "id": "tag-3",
+      "name": "Glassmorphism",
+      "slug": "glassmorphism",
+      "count": 2
+    },
+    {
+      "id": "tag-4",
+      "name": "Poster Design",
+      "slug": "poster-design",
+      "count": 3
+    },
+    {
+      "id": "tag-5",
+      "name": "ComfyUI",
+      "slug": "comfyui",
+      "count": 2
+    },
+    {
+      "id": "tag-6",
+      "name": "Reels",
+      "slug": "reels",
+      "count": 3
+    }
+  ],
+  "enquiries": [
+    {
+      "id": "enq-1792511103799-bs7j",
+      "name": "Vikram Aditya",
+      "email": "vikram@brandstudio.in",
+      "phone": "+91 98400 11223",
+      "subject": "AI Brand Identity & Poster Package",
+      "serviceCategory": "Business Branding",
+      "message": "We would like to commission 10 AI product posters for our upcoming coffee launch.",
+      "consentAccepted": true,
+      "status": "New",
+      "internalNotes": [],
+      "replyHistory": [],
+      "statusHistory": [
+        {
+          "status": "New",
+          "changedBy": "Public Contact Form",
+          "changedAt": "2026-10-20T15:45:03.799Z",
+          "note": "Initial submission"
+        }
+      ],
+      "createdAt": "2026-10-20T15:45:03.799Z",
+      "updatedAt": "2026-10-20T15:45:03.799Z"
+    },
+    {
+      "id": "enq-1",
+      "name": "Priya Darshini",
+      "email": "priya@velvetbloom.in",
+      "phone": "+91 98401 22334",
+      "subject": "Custom Festival AI Campaign for D2C Skincare Brand",
+      "serviceCategory": "Custom AI Designs",
+      "message": "Hi Keerthi! We love your glassmorphism and festival poster series on Instagram. We are launching our Diwali gifting collection next month and would love 12 custom AI product posters and 4 Reels prompts.",
+      "consentAccepted": true,
+      "status": "New",
+      "internalNotes": [
+        "High-priority D2C brand enquiry. Follow up with rate card."
+      ],
+      "replyHistory": [],
+      "statusHistory": [
+        {
+          "status": "New",
+          "changedBy": "System",
+          "changedAt": "2026-10-19T07:30:00.000Z",
+          "note": "Submitted via public website contact form"
+        }
+      ],
+      "createdAt": "2026-10-19T07:30:00.000Z",
+      "updatedAt": "2026-10-19T07:30:00.000Z"
+    },
+    {
+      "id": "enq-2",
+      "name": "Karthik Raj",
+      "email": "karthik@pixelkraft.io",
+      "phone": "+91 97910 44556",
+      "subject": "Team Workshop on ComfyUI & Brand Consistency",
+      "serviceCategory": "AI Training & Workshops",
+      "message": "Looking to book a 3-hour weekend live workshop for our 8-person design team covering Flux and ComfyUI lighting workflows.",
+      "consentAccepted": true,
+      "status": "In Progress",
+      "internalNotes": [
+        "Shared workshop syllabus PDF; awaiting preferred Saturday slot."
+      ],
+      "replyHistory": [],
+      "statusHistory": [
+        {
+          "status": "New",
+          "changedBy": "System",
+          "changedAt": "2026-10-17T11:00:00.000Z"
+        },
+        {
+          "status": "In Progress",
+          "changedBy": "admin@keerthidotexe.com",
+          "changedAt": "2026-10-18T09:00:00.000Z",
+          "note": "Sent workshop brochure"
+        }
+      ],
+      "createdAt": "2026-10-17T11:00:00.000Z",
+      "updatedAt": "2026-10-18T09:00:00.000Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1792511103941-i7yd",
+      "recipientRole": "Admin",
+      "type": "NEW_USER",
+      "title": "New User Registered",
+      "message": "Meera Nair (member.1792511103804@example.com) created a community account.",
+      "link": "/admin?tab=users",
+      "read": false,
+      "createdAt": "2026-10-20T15:45:03.941Z"
+    },
+    {
+      "id": "notif-1792511103800-60vv",
+      "recipientRole": "Admin",
+      "type": "NEW_ENQUIRY",
+      "title": "New Enquiry: AI Brand Identity & Poster Package",
+      "message": "Vikram Aditya (vikram@brandstudio.in) enquired about Business Branding.",
+      "link": "/admin?tab=enquiries",
+      "read": false,
+      "createdAt": "2026-10-20T15:45:03.800Z"
+    },
+    {
+      "id": "notif-1",
+      "recipientRole": "Admin",
+      "type": "NEW_ENQUIRY",
+      "title": "New Enquiry: Custom Festival AI Campaign",
+      "message": "Priya Darshini (priya@velvetbloom.in) submitted a Custom AI Designs enquiry.",
+      "link": "/admin?tab=enquiries",
+      "read": false,
+      "createdAt": "2026-10-19T07:30:00.000Z"
+    },
+    {
+      "id": "notif-2",
+      "recipientRole": "Admin",
+      "type": "NEW_USER",
+      "title": "New Community Member Registered",
+      "message": "Ananya Sundaram (ananya.creator@example.com) joined Keerthi_dot_exe.",
+      "link": "/admin?tab=users",
+      "read": false,
+      "createdAt": "2026-10-18T15:30:00.000Z"
+    },
+    {
+      "id": "notif-3",
+      "recipientRole": "All",
+      "type": "FEATURED_BLOG",
+      "title": "New Guide: Top 10 Free AI Image Generators in 2026",
+      "message": "Explore our latest hands-on comparison with copyable studio prompts.",
+      "link": "/blog/top-10-free-ai-image-generators-in-2026",
+      "read": false,
+      "createdAt": "2026-10-15T09:05:00.000Z"
+    }
+  ],
+  "settings": {
+    "siteName": "Keerthi_dot_exe",
+    "tagline": "AI Creative Community",
+    "shortDescription": "Your complete hub for AI prompts, creative templates, business designs, and the latest AI tools. Let’s create amazing content together!",
+    "logoUrl": "/assets/media/keerthi-avatar.png",
+    "faviconUrl": "/assets/media/keerthi-avatar.png",
+    "creatorName": "Keerthi",
+    "creatorRole": "AI Creator & Visual Storyteller",
+    "creatorProfileImage": "/assets/media/keerthi-hero.png",
+    "creatorAboutImage": "/assets/media/keerthi-about.png",
+    "creatorQuote": "Exploring AI tools, creating beautiful content, and growing together.",
+    "aboutHeading": "Creativity Meets Intelligence.",
+    "aboutDescription": "Keerthi_dot_exe explores the possibilities of AI through visual storytelling, practical prompts, creative templates, and community-driven inspiration for creators, marketers, and business owners.",
+    "aboutHighlights": [
+      {
+        "title": "AI Creative Content",
+        "subtitle": "Images, Videos, Templates",
+        "icon": "Camera"
+      },
+      {
+        "title": "Learning & Tutorials",
+        "subtitle": "Tips, guides and workflows",
+        "icon": "BookOpen"
+      },
+      {
+        "title": "Community Driven",
+        "subtitle": "Sharing ideas and growth",
+        "icon": "Users"
+      },
+      {
+        "title": "Practical & Business Focus",
+        "subtitle": "Real use templates and prompts",
+        "icon": "Target"
+      }
+    ],
+    "instagramUsername": "keerthi_dot_exe",
+    "instagramProfileUrl": "https://www.instagram.com/keerthi_dot_exe/",
+    "youtubeUrl": "https://www.youtube.com/@keerthi_dot_exe",
+    "xUrl": "https://x.com/keerthi_dot_exe",
+    "whatsappChannelUrl": "https://whatsapp.com/channel/0029VaKeerthiDotExe",
+    "contactEmail": "hello@keerthidotexe.com",
+    "contactLocation": "Chennai, India · Remote Worldwide",
+    "stats": {
+      "instagramFollowers": "41K+",
+      "promptLibraryCount": "1000+",
+      "whatsappGroupsCount": "3",
+      "contentFrequency": "Daily"
+    },
+    "whatsappGroups": [
+      {
+        "id": "wg-1",
+        "name": "AI Status Studio",
+        "description": "Daily HD aesthetic WhatsApp status prompts, festival visuals, typography quotes, and vertical 9:16 portrait recipes.",
+        "icon": "MessageCircle",
+        "membersLabel": "1,020+ Creators",
+        "ctaLabel": "Join Status Studio",
+        "inviteUrl": "https://chat.whatsapp.com/KeerthiAIStatusStudioGroup"
+      },
+      {
+        "id": "wg-2",
+        "name": "AI Business Creators",
+        "description": "Commercial poster designs, product ad scenes, restaurant promotions, brand logos, and high-converting social creatives.",
+        "icon": "Briefcase",
+        "membersLabel": "980+ Founders & Marketers",
+        "ctaLabel": "Join Business Hub",
+        "inviteUrl": "https://chat.whatsapp.com/KeerthiAIBusinessCreators"
+      },
+      {
+        "id": "wg-3",
+        "name": "AI Tech & Prompt Lab",
+        "description": "Deep-dive prompt engineering, ComfyUI workflows, Runway Gen-3 & Kling video techniques, and daily AI tool breakdowns.",
+        "icon": "Sparkles",
+        "membersLabel": "1,150+ Builders",
+        "ctaLabel": "Join Prompt Lab",
+        "inviteUrl": ""
+      }
+    ],
+    "services": [
+      {
+        "id": "srv-1",
+        "title": "Custom AI Designs",
+        "description": "Posters, social media creatives, festival campaigns, and high-resolution brand banners.",
+        "icon": "Palette",
+        "accentColor": "purple",
+        "deliverables": [
+          "4K Commercial Posters",
+          "Festival Ad Campaigns",
+          "Carousel Graphics"
+        ]
+      },
+      {
+        "id": "srv-2",
+        "title": "Prompt Consultation",
+        "description": "Personalized prompt engineering guidance and custom style consistency systems for teams.",
+        "icon": "Briefcase",
+        "accentColor": "blue",
+        "deliverables": [
+          "Custom Prompt Playbook",
+          "Brand Style Seeds",
+          "1-on-1 Workflow Audit"
+        ]
+      },
+      {
+        "id": "srv-3",
+        "title": "Business Branding",
+        "description": "Logos, product mockup templates, packaging concepts, and performance marketing creatives.",
+        "icon": "Video",
+        "accentColor": "orange",
+        "deliverables": [
+          "Brand Identity Kit",
+          "Product Studio Renders",
+          "Ad Variations"
+        ]
+      },
+      {
+        "id": "srv-4",
+        "title": "AI Training & Workshops",
+        "description": "Learn AI tools, ComfyUI pipelines, and rapid content creation in structured live sessions.",
+        "icon": "Sparkles",
+        "accentColor": "purple",
+        "deliverables": [
+          "Live Team Workshops",
+          "Recorded SOPs",
+          "Prompt Templates"
+        ]
+      },
+      {
+        "id": "srv-5",
+        "title": "Social Media Content",
+        "description": "Reels, viral WhatsApp status visuals, story templates, and monthly AI content plans.",
+        "icon": "Share2",
+        "accentColor": "cyan",
+        "deliverables": [
+          "30-Day Reels Plan",
+          "9:16 Video Prompts",
+          "Hook & Caption Packs"
+        ]
+      }
+    ],
+    "featuredCreations": [
+      {
+        "id": "fc-1",
+        "title": "Cybernetic Glass Portrait Study",
+        "category": "Aesthetic Portraits",
+        "mediaType": "Image",
+        "previewUrl": "/assets/media/blog-ai-generators.png",
+        "toolUsed": "Midjourney v6.1",
+        "promptSlug": "translucent-pearl-glass-portrait-lighting",
+        "order": 1
+      },
+      {
+        "id": "fc-2",
+        "title": "Artisan Gourmet Burger Commercial Poster",
+        "category": "Food and Restaurant Marketing",
+        "mediaType": "Template",
+        "previewUrl": "/assets/media/blog-business-posters.png",
+        "toolUsed": "Flux.1 Pro",
+        "promptSlug": "gourmet-burger-commercial-poster-typography",
+        "order": 2
+      },
+      {
+        "id": "fc-3",
+        "title": "Neon Cyberpunk Studio Reel Scene",
+        "category": "Video Generation",
+        "mediaType": "Video",
+        "previewUrl": "/assets/media/blog-video-tools.png",
+        "toolUsed": "Runway Gen-3 Alpha",
+        "promptSlug": "cinematic-cyberpunk-alley-camera-tracking-reel",
+        "order": 3
+      },
+      {
+        "id": "fc-4",
+        "title": "Twilight Hypercar Wet Asphalt Commercial",
+        "category": "Product Advertisements",
+        "mediaType": "Image",
+        "previewUrl": "/assets/media/blog-comfyui-guide.png",
+        "toolUsed": "ComfyUI + SDXL Lightning",
+        "promptSlug": "automotive-twilight-wet-asphalt-commercial",
+        "order": 4
+      }
+    ],
+    "seoDefaults": {
+      "defaultTitle": "Keerthi_dot_exe — AI Creative Community | 1000+ AI Prompts & Tutorials",
+      "defaultDescription": "Explore 1000+ curated AI prompts for images, videos, WhatsApp status, business posters, branding, and practical AI tutorials with Keerthi_dot_exe.",
+      "ogImage": "/assets/media/keerthi-hero.png"
+    },
+    "emailConfigured": false,
+    "instagramConfigured": false,
+    "storageProvider": "local",
+    "updatedAt": "2026-10-20T15:40:08.070Z"
+  },
+  "instagramAccount": {
+    "connected": false,
+    "mode": "fallback_embed",
+    "username": "keerthi_dot_exe",
+    "accountId": "17841405829301928",
+    "accountType": "MEDIA_CREATOR",
+    "followersCount": "41.4K",
+    "lastSyncedAt": "2026-10-20T15:45:04.088Z",
+    "lastSyncError": null,
+    "publicDisplayEnabled": true
+  },
+  "instagramMedia": [
+    {
+      "id": "ig-sync-1792511104088",
+      "externalMediaId": "17984510293847101",
+      "mediaType": "REELS",
+      "mediaUrl": "/assets/media/keerthi-hero.png",
+      "thumbnailUrl": "/assets/media/keerthi-hero.png",
+      "caption": "3 glassmorphism prompt secrets that transform ordinary portraits into studio art ✨ Copy the exact prompt from our library! #keerthi_dot_exe #aiprompts #midjourney",
+      "permalink": "https://www.instagram.com/keerthi_dot_exe/",
+      "timestamp": "2026-10-18T14:30:00.000Z",
+      "featured": true,
+      "visible": true,
+      "source": "approved_embed"
+    },
+    {
+      "id": "ig-2",
+      "externalMediaId": "17984510293847102",
+      "mediaType": "IMAGE",
+      "mediaUrl": "/assets/media/blog-ai-generators.png",
+      "thumbnailUrl": "/assets/media/blog-ai-generators.png",
+      "caption": "Top 10 Free AI Image Generators in 2026 tested side-by-side 🚀 Which one is your daily driver? #aitools #aicommunity",
+      "permalink": "https://www.instagram.com/keerthi_dot_exe/",
+      "timestamp": "2026-10-15T11:20:00.000Z",
+      "featured": true,
+      "visible": true,
+      "source": "approved_embed"
+    },
+    {
+      "id": "ig-3",
+      "externalMediaId": "17984510293847103",
+      "mediaType": "REELS",
+      "mediaUrl": "/assets/media/blog-whatsapp-status.png",
+      "thumbnailUrl": "/assets/media/blog-whatsapp-status.png",
+      "caption": "How to create viral 9:16 WhatsApp Status visuals in 60 seconds using free AI tools 💬✨ Join Group 1 for daily prompts!",
+      "permalink": "https://www.instagram.com/keerthi_dot_exe/",
+      "timestamp": "2026-10-12T16:45:00.000Z",
+      "featured": true,
+      "visible": true,
+      "source": "approved_embed"
+    },
+    {
+      "id": "ig-4",
+      "externalMediaId": "17984510293847104",
+      "mediaType": "CAROUSEL_ALBUM",
+      "mediaUrl": "/assets/media/blog-business-posters.png",
+      "thumbnailUrl": "/assets/media/blog-business-posters.png",
+      "caption": "Restaurant & Cafe Poster Prompts that look like a ₹50,000 commercial shoot 🍔🔥 Save this post for your next client campaign!",
+      "permalink": "https://www.instagram.com/keerthi_dot_exe/",
+      "timestamp": "2026-10-09T13:10:00.000Z",
+      "featured": true,
+      "visible": true,
+      "source": "approved_embed"
+    },
+    {
+      "id": "ig-5",
+      "externalMediaId": "17984510293847105",
+      "mediaType": "VIDEO",
+      "mediaUrl": "/assets/media/blog-video-tools.png",
+      "thumbnailUrl": "/assets/media/blog-video-tools.png",
+      "caption": "Cinematic Cyberpunk Alley Reel breakdown: Image-to-Video camera control with Runway Gen-3 & Kling 🎬⚡",
+      "permalink": "https://www.instagram.com/keerthi_dot_exe/",
+      "timestamp": "2026-10-06T18:00:00.000Z",
+      "featured": false,
+      "visible": true,
+      "source": "approved_embed"
+    },
+    {
+      "id": "ig-6",
+      "externalMediaId": "17984510293847106",
+      "mediaType": "IMAGE",
+      "mediaUrl": "/assets/media/blog-comfyui-guide.png",
+      "thumbnailUrl": "/assets/media/blog-comfyui-guide.png",
+      "caption": "Automotive commercial relighting in ComfyUI — full node graph now live on the blog 🏎️💎",
+      "permalink": "https://www.instagram.com/keerthi_dot_exe/",
+      "timestamp": "2026-10-03T12:00:00.000Z",
+      "featured": false,
+      "visible": true,
+      "source": "approved_embed"
+    }
+  ],
+  "mediaAssets": [
+    {
+      "id": "med-1",
+      "filename": "keerthi-hero.png",
+      "originalName": "keerthi-hero.png",
+      "mimeType": "image/png",
+      "sizeBytes": 128400,
+      "url": "/assets/media/keerthi-hero.png",
+      "altText": "Keerthi_dot_exe Creator Hero Portrait",
+      "uploadedBy": "admin@keerthidotexe.com",
+      "storageProvider": "local",
+      "createdAt": "2026-10-01T10:00:00.000Z"
+    },
+    {
+      "id": "med-2",
+      "filename": "keerthi-about.png",
+      "originalName": "keerthi-about.png",
+      "mimeType": "image/png",
+      "sizeBytes": 94200,
+      "url": "/assets/media/keerthi-about.png",
+      "altText": "Keerthi About Section Portrait",
+      "uploadedBy": "admin@keerthidotexe.com",
+      "storageProvider": "local",
+      "createdAt": "2026-10-01T10:05:00.000Z"
+    },
+    {
+      "id": "med-3",
+      "filename": "blog-ai-generators.png",
+      "originalName": "blog-ai-generators.png",
+      "mimeType": "image/png",
+      "sizeBytes": 42800,
+      "url": "/assets/media/blog-ai-generators.png",
+      "altText": "Top 10 Free AI Image Generators Thumbnail",
+      "uploadedBy": "admin@keerthidotexe.com",
+      "storageProvider": "local",
+      "createdAt": "2026-10-01T10:10:00.000Z"
+    },
+    {
+      "id": "med-4",
+      "filename": "blog-business-posters.png",
+      "originalName": "blog-business-posters.png",
+      "mimeType": "image/png",
+      "sizeBytes": 44100,
+      "url": "/assets/media/blog-business-posters.png",
+      "altText": "Business Poster Design Prompts Thumbnail",
+      "uploadedBy": "admin@keerthidotexe.com",
+      "storageProvider": "local",
+      "createdAt": "2026-10-01T10:15:00.000Z"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "aud-1792511104070-z3rf",
+      "actorId": "usr-1792511103940-1c88",
+      "actorEmail": "member.1792511103804@example.com",
+      "action": "USER_PASSWORD_RESET_COMPLETED",
+      "targetType": "Auth",
+      "targetId": "usr-1792511103940-1c88",
+      "details": "Password reset completed via single-use token.",
+      "ipAddress": "127.0.0.1",
+      "createdAt": "2026-10-20T15:45:04.070Z"
+    },
+    {
+      "id": "aud-1",
+      "actorId": "usr-admin-1",
+      "actorEmail": "admin@keerthidotexe.com",
+      "action": "SYSTEM_SEED_INITIALIZED",
+      "targetType": "Settings",
+      "targetId": "global-settings",
+      "details": "Initialized Keerthi_dot_exe platform settings, prompt library, and blog CMS.",
+      "ipAddress": "127.0.0.1",
+      "createdAt": "2026-10-01T08:00:00.000Z"
+    }
+  ]
+}

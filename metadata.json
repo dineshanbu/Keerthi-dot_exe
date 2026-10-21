@@ -1,0 +1,6 @@
+{
+  "name": "Keerthi_dot_exe — AI Creative Community",
+  "description": "Your complete hub for AI prompts, creative templates, business designs, and practical AI tutorials for creators and brands.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
