@@ -282,10 +282,31 @@ const AuditLogSchema = new Schema(
   { timestamps: true }
 );
 
+const CommentSchema = new Schema(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    targetType: { type: String, enum: ['blog', 'prompt'], required: true, index: true },
+    targetId: { type: String, required: true, index: true },
+    targetSlug: { type: String, required: true, lowercase: true, trim: true, index: true },
+    parentId: { type: String, default: null, index: true },
+    userId: { type: String, required: true, index: true },
+    userName: { type: String, required: true, trim: true },
+    userRole: { type: String, enum: ['Admin', 'User'], default: 'User' },
+    userAvatarUrl: { type: String, default: '' },
+    content: { type: String, required: true },
+    rating: { type: Number, min: 1, max: 5 },
+    likesUserIds: [{ type: String }],
+    likesCount: { type: Number, default: 0 },
+    editedAt: { type: Date },
+  },
+  { timestamps: true }
+);
+
 export const Models = {
   User: mongoose.models.User || mongoose.model('User', UserSchema),
   BlogPost: mongoose.models.BlogPost || mongoose.model('BlogPost', BlogPostSchema),
   Prompt: mongoose.models.Prompt || mongoose.model('Prompt', PromptSchema),
+  Comment: mongoose.models.Comment || mongoose.model('Comment', CommentSchema),
   Category: mongoose.models.Category || mongoose.model('Category', CategorySchema),
   Tag: mongoose.models.Tag || mongoose.model('Tag', TagSchema),
   Enquiry: mongoose.models.Enquiry || mongoose.model('Enquiry', EnquirySchema),

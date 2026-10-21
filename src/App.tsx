@@ -22,7 +22,8 @@ const ScrollManager: React.FC = () => {
   useEffect(() => {
     if (hash) {
       setTimeout(() => {
-        const el = document.querySelector(hash);
+        const rawId = decodeURIComponent(hash.replace(/^#/, ''));
+        const el = rawId ? document.getElementById(rawId) : null;
         if (el) el.scrollIntoView({ behavior: 'smooth' });
       }, 60);
     } else {

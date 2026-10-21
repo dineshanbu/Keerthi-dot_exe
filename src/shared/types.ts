@@ -159,6 +159,7 @@ export interface EnquiryItem {
 export type NotificationType =
   | 'NEW_USER'
   | 'NEW_ENQUIRY'
+  | 'NEW_COMMENT'
   | 'BLOG_PUBLISHED'
   | 'BLOG_PUBLISH_FAILURE'
   | 'SCHEDULED_PUBLISH_FAILURE'
@@ -167,6 +168,27 @@ export type NotificationType =
   | 'FEATURED_BLOG'
   | 'NEW_PROMPT'
   | 'COMMUNITY_ANNOUNCEMENT';
+
+export type CommentTargetType = 'blog' | 'prompt';
+
+export interface CommentItem {
+  id: string;
+  targetType: CommentTargetType;
+  targetId: string;
+  targetSlug: string;
+  parentId?: string | null;
+  userId: string;
+  userName: string;
+  userRole: UserRole;
+  userAvatarUrl?: string;
+  content: string;
+  rating?: number;
+  likesUserIds: string[];
+  likesCount: number;
+  editedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface NotificationItem {
   id: string;
@@ -302,7 +324,7 @@ export interface AuditLogItem {
   actorId: string;
   actorEmail: string;
   action: string;
-  targetType: 'User' | 'BlogPost' | 'Prompt' | 'Enquiry' | 'Settings' | 'Instagram' | 'Auth' | 'Media';
+  targetType: 'User' | 'BlogPost' | 'Prompt' | 'Enquiry' | 'Settings' | 'Instagram' | 'Auth' | 'Media' | 'Comment';
   targetId: string;
   details: string;
   ipAddress?: string;

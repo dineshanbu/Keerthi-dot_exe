@@ -27,6 +27,7 @@ import {
   ErrorState,
   SmartImage,
   AuthorSpotlightSection,
+  CommentSection,
 } from '../components/ui/GlassComponents';
 import { useApp } from '../context/AppContext';
 
@@ -623,6 +624,14 @@ export const PromptDetailPage: React.FC = () => {
       {authorSpotlight && (
         <AuthorSpotlightSection author={authorSpotlight} contextType="prompt" />
       )}
+
+      {/* Community Comments & Feedback Section */}
+      <CommentSection
+        targetType="prompt"
+        targetId={prompt.id}
+        targetSlug={prompt.slug}
+        targetTitle={prompt.title}
+      />
 
       {/* Related Prompts */}
       {related.length > 0 && (

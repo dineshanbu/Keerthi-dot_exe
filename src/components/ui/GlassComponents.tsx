@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { io, type Socket } from 'socket.io-client';
 import {
   ArrowRight,
   Bell,
@@ -15,8 +16,24 @@ import {
   Heart,
   Bookmark,
   BookOpen,
+  MessageSquare,
+  Send,
+  Star,
+  ThumbsUp,
+  Reply,
+  Pencil,
+  Trash2,
+  Lock,
+  LogIn,
+  UserPlus,
 } from 'lucide-react';
-import type { PromptItem, BlogPost, AuthorSpotlightData } from '../../shared/types';
+import type {
+  PromptItem,
+  BlogPost,
+  AuthorSpotlightData,
+  CommentItem,
+  CommentTargetType,
+} from '../../shared/types';
 import { useApp } from '../../context/AppContext';
 
 export const SmartImage: React.FC<{
@@ -771,4 +788,925 @@ export const AuthorSpotlightSection: React.FC<{
     </section>
   );
 };
+
+export const CommentSection: React.FC<{
+  targetType: CommentTargetType;
+  targetId: string;
+  targetSlug: string;
+  targetTitle: string;
+}> = ({ targetType, targetId, targetSlug, targetTitle }) => {
+  const { user, refreshAuth, refreshNotifications, showToast } = useApp();
+  const location = useLocation();
+
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<'newest' | 'helpful' | 'oldest'>('newest');
+
+  // New top-level comment composer state
+  const [content, setContent] = useState('');
+  const [rating, setRating] = useState<number>(5);
+  const [includeRating, setIncludeRating] = useState<boolean>(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [demoAuthLoading, setDemoAuthLoading] = useState(false);
+
+  // Reply state
+  const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [replySubmitting, setReplySubmitting] = useState(false);
+
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const [editRating, setEditRating] = useState<number | undefined>(undefined);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
+  const authGateRef = useRef<HTMLDivElement>(null);
+
+  const fetchComments = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        targetType,
+        targetSlug,
+        targetId,
+      });
+      const res = await fetch(`/api/public/comments?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setComments(data.items || []);
+      }
+    } catch {
+      // Ignore transient load error
+    } finally {
+      setLoading(false);
+    }
+  }, [targetType, targetSlug, targetId]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
+
+  // Real-time Socket.IO subscription for live comments
+  useEffect(() => {
+    const isHeadless =
+      typeof navigator !== 'undefined' &&
+      (navigator.webdriver || /HeadlessChrome/i.test(navigator.userAgent));
+    if (isHeadless) return;
+
+    const socket: Socket = io({
+      withCredentials: true,
+      transports: ['websocket', 'polling'],
+    });
+
+    socket.on('comment:created', (incoming: CommentItem) => {
+      if (
+        incoming.targetType !== targetType ||
+        (incoming.targetSlug.toLowerCase() !== targetSlug.toLowerCase() &&
+          incoming.targetId !== targetId)
+      ) {
+        return;
+      }
+      setComments((prev) => {
+        if (prev.some((c) => c.id === incoming.id)) return prev;
+        return [incoming, ...prev];
+      });
+    });
+
+    socket.on('comment:updated', (updated: CommentItem) => {
+      setComments((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+    });
+
+    socket.on('comment:deleted', (payload: { ids: string[] }) => {
+      const deletedSet = new Set(payload.ids || []);
+      setComments((prev) => prev.filter((c) => !deletedSet.has(c.id)));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [targetType, targetSlug, targetId]);
+
+  const handleQuickDemoSignIn = async () => {
+    try {
+      setDemoAuthLoading(true);
+      const res = await fetch('/api/auth/demo-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ role: 'User' }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await refreshAuth();
+        await refreshNotifications();
+        showToast({
+          type: 'success',
+          title: 'Signed In to Comment',
+          description: data.message || 'You can now share feedback and post comments.',
+        });
+      }
+    } catch {
+      showToast({
+        type: 'error',
+        title: 'Sign-In Error',
+        description: 'Please use the Log In button to authenticate.',
+      });
+    } finally {
+      setDemoAuthLoading(false);
+    }
+  };
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    if (!user) {
+      setFormError('Please sign in to post a comment.');
+      return;
+    }
+    const trimmed = content.trim();
+    if (trimmed.length < 2) {
+      setFormError('Please enter at least 2 characters for your comment.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          targetType,
+          targetSlug,
+          targetId,
+          content: trimmed,
+          rating: includeRating ? rating : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setFormError(data.error || 'Could not post comment.');
+        return;
+      }
+      const created: CommentItem = data.comment;
+      setComments((prev) => (prev.some((c) => c.id === created.id) ? prev : [created, ...prev]));
+      setContent('');
+      showToast({
+        type: 'success',
+        title: 'Comment Posted!',
+        description: `Your feedback on "${targetTitle}" is now live.`,
+      });
+    } catch {
+      setFormError('Network error while posting your comment. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmitReply = async (parentId: string) => {
+    if (!user) {
+      showToast({
+        type: 'info',
+        title: 'Sign In Required',
+        description: 'Please log in to reply to community comments.',
+      });
+      authGateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    const trimmed = replyText.trim();
+    if (trimmed.length < 2) return;
+
+    try {
+      setReplySubmitting(true);
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          targetType,
+          targetSlug,
+          targetId,
+          parentId,
+          content: trimmed,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.comment) {
+        const created: CommentItem = data.comment;
+        setComments((prev) => (prev.some((c) => c.id === created.id) ? prev : [created, ...prev]));
+        setReplyText('');
+        setReplyingToId(null);
+        showToast({ type: 'success', title: 'Reply Posted!' });
+      } else {
+        showToast({
+          type: 'error',
+          title: 'Reply Failed',
+          description: data.error || 'Could not post reply.',
+        });
+      }
+    } catch {
+      showToast({ type: 'error', title: 'Network Error', description: 'Could not post reply.' });
+    } finally {
+      setReplySubmitting(false);
+    }
+  };
+
+  const handleSaveEdit = async (commentId: string) => {
+    const trimmed = editText.trim();
+    if (trimmed.length < 2) return;
+
+    try {
+      setEditSubmitting(true);
+      const res = await fetch(`/api/comments/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          content: trimmed,
+          rating: editRating,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.comment) {
+        setComments((prev) => prev.map((c) => (c.id === commentId ? data.comment : c)));
+        setEditingId(null);
+        setEditText('');
+        showToast({ type: 'success', title: 'Comment Updated' });
+      } else {
+        showToast({
+          type: 'error',
+          title: 'Update Failed',
+          description: data.error || 'Could not update comment.',
+        });
+      }
+    } catch {
+      showToast({ type: 'error', title: 'Network Error', description: 'Could not update comment.' });
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/comments/${commentId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const deletedIds = new Set<string>(data.deletedIds || [commentId]);
+        setComments((prev) => prev.filter((c) => !deletedIds.has(c.id)));
+        showToast({ type: 'info', title: 'Comment Removed' });
+      } else {
+        showToast({
+          type: 'error',
+          title: 'Delete Failed',
+          description: data.error || 'Could not delete comment.',
+        });
+      }
+    } catch {
+      showToast({ type: 'error', title: 'Network Error', description: 'Could not delete comment.' });
+    }
+  };
+
+  const handleToggleLike = async (comment: CommentItem) => {
+    if (!user) {
+      showToast({
+        type: 'info',
+        title: 'Authentication Required',
+        description: 'Please log in to mark comments as helpful.',
+      });
+      authGateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/comments/${comment.id}/like`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok && data.comment) {
+        setComments((prev) => prev.map((c) => (c.id === comment.id ? data.comment : c)));
+      }
+    } catch {
+      // Ignore network hiccup
+    }
+  };
+
+  const topLevelComments = comments.filter((c) => !c.parentId);
+  const sortedTopLevel = [...topLevelComments].sort((a, b) => {
+    if (sortBy === 'helpful') {
+      if (b.likesCount !== a.likesCount) return b.likesCount - a.likesCount;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (sortBy === 'oldest') {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  const getReplies = (parentId: string) =>
+    comments
+      .filter((c) => c.parentId === parentId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+  const ratedComments = topLevelComments.filter((c) => typeof c.rating === 'number' && c.rating > 0);
+  const averageRating =
+    ratedComments.length > 0
+      ? (ratedComments.reduce((acc, c) => acc + (c.rating || 0), 0) / ratedComments.length).toFixed(1)
+      : null;
+
+  const formatCommentDate = (iso: string) =>
+    new Date(iso).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+
+  return (
+    <section
+      id="comments"
+      role="region"
+      aria-label="Community Comments and Feedback"
+      className="glass-panel rounded-3xl p-6 sm:p-8 space-y-6 border border-white/90"
+    >
+      {/* Section Header & Sort Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200/70">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <MessageSquare className="w-5 h-5 text-purple-600" />
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-display tracking-tight">
+              Community Feedback & Comments
+            </h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 mt-1">
+            <span className="font-mono tabular-nums font-semibold text-slate-900">
+              {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
+            </span>
+            {averageRating && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span className="inline-flex items-center gap-1 font-mono tabular-nums text-amber-700 font-semibold">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                  <span>{averageRating} / 5.0 average rating</span>
+                </span>
+              </>
+            )}
+            <span aria-hidden="true">·</span>
+            <span>
+              Share your results, prompt variations, or questions on this{' '}
+              {targetType === 'blog' ? 'article' : 'AI prompt'}
+            </span>
+          </div>
+        </div>
+
+        {/* Sort Segmented Control */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100/90 border border-slate-200/70 self-start sm:self-auto">
+          {(
+            [
+              { id: 'newest', label: 'Newest' },
+              { id: 'helpful', label: 'Most Helpful' },
+              { id: 'oldest', label: 'Oldest' },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setSortBy(tab.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                sortBy === tab.id
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Authentication Gate OR Authenticated Comment Composer */}
+      <div ref={authGateRef}>
+        {user ? (
+          <form
+            onSubmit={handleSubmitComment}
+            className="rounded-2xl bg-white/90 border border-slate-200/80 p-5 space-y-4 shadow-2xs"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full overflow-hidden bg-purple-100 border border-slate-200 shrink-0 flex items-center justify-center text-xs font-bold text-purple-800">
+                  {user.avatarUrl ? (
+                    <SmartImage
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{user.name.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-bold text-slate-900">{user.name}</span>
+                    <span className="text-slate-400" aria-hidden="true">·</span>
+                    <span className="text-purple-700 font-semibold">
+                      {user.role === 'Admin' ? 'Creator & Admin' : 'Verified Member'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Commenting publicly on {targetTitle}
+                  </p>
+                </div>
+              </div>
+
+              {/* Optional Star Rating Selector */}
+              <div className="flex items-center gap-3">
+                <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeRating}
+                    onChange={(e) => setIncludeRating(e.target.checked)}
+                    className="rounded text-purple-600 focus:ring-purple-500"
+                  />
+                  <span>Include rating:</span>
+                </label>
+                {includeRating && (
+                  <div
+                    className="flex items-center gap-0.5"
+                    role="group"
+                    aria-label="Select star rating from 1 to 5"
+                  >
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRating(star)}
+                        aria-label={`Rate ${star} out of 5 stars`}
+                        className="p-1 text-amber-500 hover:scale-110 transition-transform cursor-pointer"
+                      >
+                        <Star
+                          className={`w-4 h-4 ${
+                            star <= rating ? 'fill-amber-400 text-amber-500' : 'text-slate-300'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="comment-textarea" className="sr-only">
+                Write your comment or feedback
+              </label>
+              <textarea
+                id="comment-textarea"
+                rows={3}
+                maxLength={1500}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder={
+                  targetType === 'prompt'
+                    ? 'Share how this prompt worked for you, model settings you used, or tips for other creators...'
+                    : 'Share your thoughts, workflow questions, or key takeaways from this guide...'
+                }
+                className="w-full rounded-xl bg-slate-50/70 border border-slate-200/90 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/15 transition-all"
+              />
+              {formError && (
+                <p className="text-xs font-medium text-rose-600 mt-1.5">{formError}</p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <span className="text-[11px] font-mono tabular-nums text-slate-400">
+                {content.length} / 1500 characters
+              </span>
+              <GlassButton
+                type="submit"
+                size="sm"
+                disabled={submitting || content.trim().length < 2}
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>{submitting ? 'Posting...' : 'Post Comment'}</span>
+              </GlassButton>
+            </div>
+          </form>
+        ) : (
+          <div className="rounded-2xl bg-white/90 border border-slate-200/90 p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                <Lock className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 font-display">
+                  Sign in required to join the conversation
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed max-w-xl">
+                  Log in to your Keerthi_dot_exe account to share feedback on this{' '}
+                  {targetType === 'blog' ? 'article' : 'AI prompt'}, rate results, reply to creators, or upvote helpful tips.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <Link
+                to={`/login?redirect=${encodeURIComponent(location.pathname)}`}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] text-white text-xs font-semibold shadow-sm shadow-purple-500/20 hover:brightness-105 transition-all whitespace-nowrap shrink-0"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Log In to Comment</span>
+              </Link>
+              <Link
+                to="/signup"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 transition-colors whitespace-nowrap shrink-0"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Sign Up Free</span>
+              </Link>
+              <button
+                type="button"
+                onClick={handleQuickDemoSignIn}
+                disabled={demoAuthLoading}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer disabled:opacity-50"
+              >
+                <span>{demoAuthLoading ? 'Signing in...' : 'Instant Member Demo'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Comments List */}
+      {loading ? (
+        <div className="space-y-3">
+          <div className="h-24 rounded-2xl bg-white/60 border border-white/80 animate-pulse" />
+          <div className="h-24 rounded-2xl bg-white/60 border border-white/80 animate-pulse" />
+        </div>
+      ) : sortedTopLevel.length === 0 ? (
+        <div className="rounded-2xl bg-white/70 border border-slate-200/70 p-8 text-center space-y-2">
+          <MessageSquare className="w-7 h-7 text-purple-500 mx-auto" />
+          <h3 className="text-sm font-bold text-slate-900 font-display">
+            No comments yet — be the first to share feedback!
+          </h3>
+          <p className="text-xs text-slate-600 max-w-md mx-auto">
+            {user
+              ? 'Use the comment box above to share your thoughts, prompt tweaks, or questions.'
+              : 'Sign in above to post the first comment on this page.'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {sortedTopLevel.map((comment) => {
+            const replies = getReplies(comment.id);
+            const isOwnerOrAdmin =
+              Boolean(user) && (user!.id === comment.userId || user!.role === 'Admin');
+            const hasLiked = Boolean(user) && (comment.likesUserIds || []).includes(user!.id);
+            const isEditing = editingId === comment.id;
+            const isReplying = replyingToId === comment.id;
+
+            return (
+              <div
+                key={comment.id}
+                className="rounded-2xl bg-white/85 border border-slate-200/80 p-5 space-y-3.5 transition-colors"
+              >
+                {/* Comment Header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-full overflow-hidden bg-purple-100 border border-slate-200 shrink-0 flex items-center justify-center text-xs font-bold text-purple-800">
+                      {comment.userAvatarUrl ? (
+                        <SmartImage
+                          src={comment.userAvatarUrl}
+                          alt={comment.userName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{comment.userName.charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                        <span className="font-bold text-slate-900 truncate">
+                          {comment.userName}
+                        </span>
+                        <span className="text-slate-400" aria-hidden="true">·</span>
+                        <span
+                          className={`font-semibold ${
+                            comment.userRole === 'Admin' ? 'text-purple-700' : 'text-slate-500'
+                          }`}
+                        >
+                          {comment.userRole === 'Admin' ? 'Creator & Admin' : 'Community Member'}
+                        </span>
+                        <span className="text-slate-400" aria-hidden="true">·</span>
+                        <span className="text-slate-500 font-mono tabular-nums">
+                          {formatCommentDate(comment.createdAt)}
+                        </span>
+                        {comment.editedAt && (
+                          <>
+                            <span className="text-slate-400" aria-hidden="true">·</span>
+                            <span className="text-slate-400 italic">Edited</span>
+                          </>
+                        )}
+                      </div>
+
+                      {typeof comment.rating === 'number' && comment.rating > 0 && (
+                        <div
+                          className="flex items-center gap-0.5 mt-0.5"
+                          aria-label={`Rated ${comment.rating} out of 5 stars`}
+                        >
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-3 h-3 ${
+                                star <= comment.rating!
+                                  ? 'fill-amber-400 text-amber-500'
+                                  : 'text-slate-200'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Owner / Admin Edit & Delete Controls */}
+                  {isOwnerOrAdmin && !isEditing && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingId(comment.id);
+                          setEditText(comment.content);
+                          setEditRating(comment.rating);
+                        }}
+                        aria-label="Edit comment"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteComment(comment.id)}
+                        aria-label="Delete comment"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Comment Body or Inline Editor */}
+                {isEditing ? (
+                  <div className="space-y-3 pt-1">
+                    <textarea
+                      rows={3}
+                      maxLength={1500}
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className="w-full rounded-xl bg-white border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-purple-500"
+                    />
+                    <div className="flex items-center justify-end gap-2">
+                      <GlassButton
+                        type="button"
+                        variant="glass"
+                        size="sm"
+                        onClick={() => setEditingId(null)}
+                      >
+                        Cancel
+                      </GlassButton>
+                      <GlassButton
+                        type="button"
+                        size="sm"
+                        disabled={editSubmitting || editText.trim().length < 2}
+                        onClick={() => handleSaveEdit(comment.id)}
+                      >
+                        {editSubmitting ? 'Saving...' : 'Save Changes'}
+                      </GlassButton>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                    {comment.content}
+                  </p>
+                )}
+
+                {/* Comment Actions Footer */}
+                <div className="flex items-center gap-4 pt-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleLike(comment)}
+                    aria-pressed={hasLiked}
+                    className={`inline-flex items-center gap-1.5 font-semibold transition-colors cursor-pointer ${
+                      hasLiked
+                        ? 'text-purple-700'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    <ThumbsUp className={`w-3.5 h-3.5 ${hasLiked ? 'fill-current' : ''}`} />
+                    <span>Helpful</span>
+                    <span className="font-mono tabular-nums">({comment.likesCount || 0})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!user) {
+                        showToast({
+                          type: 'info',
+                          title: 'Authentication Required',
+                          description: 'Please sign in to reply to comments.',
+                        });
+                        authGateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                      }
+                      setReplyingToId((prev) => (prev === comment.id ? null : comment.id));
+                      setReplyText('');
+                    }}
+                    className="inline-flex items-center gap-1.5 font-semibold text-slate-500 hover:text-purple-700 transition-colors cursor-pointer"
+                  >
+                    <Reply className="w-3.5 h-3.5" />
+                    <span>Reply</span>
+                  </button>
+                </div>
+
+                {/* Inline Reply Composer */}
+                {isReplying && user && (
+                  <div className="mt-3 pt-3 border-t border-slate-200/70 space-y-2.5">
+                    <textarea
+                      rows={2}
+                      maxLength={1500}
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      placeholder={`Reply to ${comment.userName}...`}
+                      className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2 text-xs sm:text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-purple-500"
+                    />
+                    <div className="flex items-center justify-end gap-2">
+                      <GlassButton
+                        type="button"
+                        variant="glass"
+                        size="sm"
+                        onClick={() => setReplyingToId(null)}
+                      >
+                        Cancel
+                      </GlassButton>
+                      <GlassButton
+                        type="button"
+                        size="sm"
+                        disabled={replySubmitting || replyText.trim().length < 2}
+                        onClick={() => handleSubmitReply(comment.id)}
+                      >
+                        <Send className="w-3 h-3" />
+                        <span>{replySubmitting ? 'Replying...' : 'Post Reply'}</span>
+                      </GlassButton>
+                    </div>
+                  </div>
+                )}
+
+                {/* Threaded Replies */}
+                {replies.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-slate-100 pl-4 sm:pl-6 space-y-3">
+                    {replies.map((reply) => {
+                      const canManageReply =
+                        Boolean(user) && (user!.id === reply.userId || user!.role === 'Admin');
+                      const hasLikedReply =
+                        Boolean(user) && (reply.likesUserIds || []).includes(user!.id);
+                      const isEditingReply = editingId === reply.id;
+
+                      return (
+                        <div
+                          key={reply.id}
+                          className="rounded-xl bg-slate-50/90 border border-slate-200/70 p-3.5 space-y-2"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-7 h-7 rounded-full overflow-hidden bg-purple-100 border border-slate-200 shrink-0 flex items-center justify-center text-[11px] font-bold text-purple-800">
+                                {reply.userAvatarUrl ? (
+                                  <SmartImage
+                                    src={reply.userAvatarUrl}
+                                    alt={reply.userName}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <span>{reply.userName.charAt(0).toUpperCase()}</span>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                                <span className="font-bold text-slate-900">{reply.userName}</span>
+                                <span className="text-slate-400" aria-hidden="true">·</span>
+                                <span
+                                  className={`font-semibold ${
+                                    reply.userRole === 'Admin'
+                                      ? 'text-purple-700'
+                                      : 'text-slate-500'
+                                  }`}
+                                >
+                                  {reply.userRole === 'Admin' ? 'Creator & Admin' : 'Member'}
+                                </span>
+                                <span className="text-slate-400" aria-hidden="true">·</span>
+                                <span className="text-slate-500 font-mono tabular-nums">
+                                  {formatCommentDate(reply.createdAt)}
+                                </span>
+                                {reply.editedAt && (
+                                  <>
+                                    <span className="text-slate-400" aria-hidden="true">·</span>
+                                    <span className="text-slate-400 italic">Edited</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+
+                            {canManageReply && !isEditingReply && (
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingId(reply.id);
+                                    setEditText(reply.content);
+                                    setEditRating(undefined);
+                                  }}
+                                  aria-label="Edit reply"
+                                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteComment(reply.id)}
+                                  aria-label="Delete reply"
+                                  className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {isEditingReply ? (
+                            <div className="space-y-2">
+                              <textarea
+                                rows={2}
+                                maxLength={1500}
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-purple-500"
+                              />
+                              <div className="flex items-center justify-end gap-2">
+                                <GlassButton
+                                  type="button"
+                                  variant="glass"
+                                  size="sm"
+                                  onClick={() => setEditingId(null)}
+                                >
+                                  Cancel
+                                </GlassButton>
+                                <GlassButton
+                                  type="button"
+                                  size="sm"
+                                  disabled={editSubmitting || editText.trim().length < 2}
+                                  onClick={() => handleSaveEdit(reply.id)}
+                                >
+                                  Save
+                                </GlassButton>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                              {reply.content}
+                            </p>
+                          )}
+
+                          <div className="flex items-center gap-3 text-[11px]">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleLike(reply)}
+                              aria-pressed={hasLikedReply}
+                              className={`inline-flex items-center gap-1 font-semibold transition-colors cursor-pointer ${
+                                hasLikedReply
+                                  ? 'text-purple-700'
+                                  : 'text-slate-500 hover:text-slate-900'
+                              }`}
+                            >
+                              <ThumbsUp
+                                className={`w-3 h-3 ${hasLikedReply ? 'fill-current' : ''}`}
+                              />
+                              <span>Helpful ({reply.likesCount || 0})</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+};
+
 

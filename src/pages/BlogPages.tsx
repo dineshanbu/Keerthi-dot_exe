@@ -20,6 +20,7 @@ import {
   ErrorState,
   SmartImage,
   AuthorSpotlightSection,
+  CommentSection,
 } from '../components/ui/GlassComponents';
 import { extractTableOfContents, injectHeadingIds } from '../utils/platformLogic';
 import { useApp } from '../context/AppContext';
@@ -429,6 +430,14 @@ export const BlogDetailPage: React.FC = () => {
       {authorSpotlight && (
         <AuthorSpotlightSection author={authorSpotlight} contextType="blog" />
       )}
+
+      {/* Community Comments & Feedback Section */}
+      <CommentSection
+        targetType="blog"
+        targetId={article.id}
+        targetSlug={article.slug}
+        targetTitle={article.title}
+      />
 
       {/* Previous / Next Navigation */}
       {(prevArticle || nextArticle) && (

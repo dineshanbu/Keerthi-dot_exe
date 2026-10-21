@@ -6,6 +6,7 @@ import type {
   UserPublic,
   BlogPost,
   PromptItem,
+  CommentItem,
   CategoryItem,
   TagItem,
   EnquiryItem,
@@ -30,6 +31,7 @@ export interface DatabaseState {
   users: StoredUser[];
   blogs: BlogPost[];
   prompts: PromptItem[];
+  comments: CommentItem[];
   categories: CategoryItem[];
   tags: TagItem[];
   enquiries: EnquiryItem[];
@@ -123,6 +125,9 @@ async function hydrateOrSyncMongoCollections(): Promise<void> {
 
     if (existingSnapshot && existingSnapshot.state && existingSnapshot.state.users?.length) {
       dbState = existingSnapshot.state as DatabaseState;
+      if (!Array.isArray(dbState.comments)) {
+        dbState.comments = createInitialComments();
+      }
       fs.mkdirSync(DATA_DIR, { recursive: true });
       fs.writeFileSync(DB_FILE, JSON.stringify(dbState, null, 2), 'utf8');
     }
@@ -154,6 +159,9 @@ async function syncStateToMongoCollections(): Promise<void> {
       ),
       ...dbState.prompts.map((p) =>
         Models.Prompt.updateOne({ slug: p.slug }, { $set: { ...p } }, { upsert: true })
+      ),
+      ...(dbState.comments || []).map((cm) =>
+        Models.Comment.updateOne({ id: cm.id }, { $set: { ...cm } }, { upsert: true })
       ),
       ...dbState.categories.map((c) =>
         Models.Category.updateOne({ slug: c.slug }, { $set: { ...c } }, { upsert: true })
@@ -910,6 +918,100 @@ function createInitialInstagramMedia(): InstagramMediaItem[] {
   ];
 }
 
+function createInitialComments(): CommentItem[] {
+  return [
+    {
+      id: 'cmt-1',
+      targetType: 'prompt',
+      targetId: 'prm-1',
+      targetSlug: 'translucent-pearl-glass-portrait-lighting',
+      parentId: null,
+      userId: 'usr-member-1',
+      userName: 'Ananya Sundaram',
+      userRole: 'User',
+      userAvatarUrl: '/assets/media/keerthi-about.png',
+      content:
+        'Tested this prompt in Flux.1 Dev with a 4:5 portrait ratio—the translucent acrylic panels and lavender rim lighting came out studio-clean on the very first run!',
+      rating: 5,
+      likesUserIds: ['usr-admin-1', 'usr-member-2'],
+      likesCount: 2,
+      createdAt: '2026-10-18T11:20:00.000Z',
+      updatedAt: '2026-10-18T11:20:00.000Z',
+    },
+    {
+      id: 'cmt-2',
+      targetType: 'prompt',
+      targetId: 'prm-1',
+      targetSlug: 'translucent-pearl-glass-portrait-lighting',
+      parentId: 'cmt-1',
+      userId: 'usr-admin-1',
+      userName: 'Keerthi (Admin)',
+      userRole: 'Admin',
+      userAvatarUrl: '/assets/media/keerthi-avatar.png',
+      content:
+        'So glad it worked well for you, Ananya! Try pairing it with a 75mm lens keyword if you want a slightly tighter headshot crop.',
+      likesUserIds: ['usr-member-1'],
+      likesCount: 1,
+      createdAt: '2026-10-18T12:05:00.000Z',
+      updatedAt: '2026-10-18T12:05:00.000Z',
+    },
+    {
+      id: 'cmt-3',
+      targetType: 'prompt',
+      targetId: 'prm-2',
+      targetSlug: 'gourmet-burger-commercial-poster-typography',
+      parentId: null,
+      userId: 'usr-member-2',
+      userName: 'Raghav Menon',
+      userRole: 'User',
+      userAvatarUrl: '',
+      content:
+        'Used this exact structure in Ideogram 2.0 for a local burger café weekend promo. Leaving the top-left negative space made adding the price badge super clean.',
+      rating: 5,
+      likesUserIds: ['usr-admin-1'],
+      likesCount: 1,
+      createdAt: '2026-10-17T16:40:00.000Z',
+      updatedAt: '2026-10-17T16:40:00.000Z',
+    },
+    {
+      id: 'cmt-4',
+      targetType: 'blog',
+      targetId: 'blog-1',
+      targetSlug: 'top-10-free-ai-image-generators-in-2026',
+      parentId: null,
+      userId: 'usr-member-1',
+      userName: 'Ananya Sundaram',
+      userRole: 'User',
+      userAvatarUrl: '/assets/media/keerthi-about.png',
+      content:
+        'The breakdown between Flux.1 for skin texture and Ideogram 2.0 for embedded poster typography saved our team so much trial and error. Bookmarking this guide!',
+      rating: 5,
+      likesUserIds: ['usr-admin-1', 'usr-member-2'],
+      likesCount: 2,
+      createdAt: '2026-10-16T14:15:00.000Z',
+      updatedAt: '2026-10-16T14:15:00.000Z',
+    },
+    {
+      id: 'cmt-5',
+      targetType: 'blog',
+      targetId: 'blog-2',
+      targetSlug: 'how-to-create-viral-whatsapp-status-with-ai',
+      parentId: null,
+      userId: 'usr-member-2',
+      userName: 'Raghav Menon',
+      userRole: 'User',
+      userAvatarUrl: '',
+      content:
+        'Animating only the ambient bokeh and hair breeze in Kling AI while locking the camera keeps the frosted glass quote text super sharp. Great tip!',
+      rating: 5,
+      likesUserIds: ['usr-admin-1'],
+      likesCount: 1,
+      createdAt: '2026-10-14T09:50:00.000Z',
+      updatedAt: '2026-10-14T09:50:00.000Z',
+    },
+  ];
+}
+
 export async function ensureSeededState(): Promise<DatabaseState> {
   if (dbState) return dbState;
 
@@ -929,6 +1031,10 @@ export async function ensureSeededState(): Promise<DatabaseState> {
           dbState.prompts.push(sp);
           added = true;
         }
+      }
+      if (!Array.isArray(dbState.comments)) {
+        dbState.comments = createInitialComments();
+        added = true;
       }
       const adminUser = dbState.users.find(
         (u) => u.id === 'usr-admin-1' || u.email.toLowerCase() === adminEmail
@@ -1196,10 +1302,13 @@ export async function ensureSeededState(): Promise<DatabaseState> {
       !process.env.INSTAGRAM_APP_ID.includes('your_meta')
   );
 
+  const comments = createInitialComments();
+
   dbState = {
     users,
     blogs,
     prompts,
+    comments,
     categories,
     tags,
     enquiries,
@@ -1266,6 +1375,7 @@ export function getDatabaseStatusSummary() {
       users: db.users.length,
       blogs: db.blogs.length,
       prompts: db.prompts.length,
+      comments: (db.comments || []).length,
       categories: db.categories.length,
       tags: db.tags.length,
       enquiries: db.enquiries.length,

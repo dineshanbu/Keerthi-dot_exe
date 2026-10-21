@@ -18,6 +18,8 @@ import type { PromptItem } from '../shared/types';
 export const LoginPage: React.FC = () => {
   const { refreshAuth, refreshNotifications, showToast } = useApp();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectPath = searchParams.get('redirect') || '';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,7 +55,11 @@ export const LoginPage: React.FC = () => {
       await refreshAuth();
       await refreshNotifications();
       showToast({ type: 'success', title: 'Logged In', description: data.message });
-      navigate(data.user?.role === 'Admin' ? '/admin' : '/');
+      if (redirectPath && redirectPath.startsWith('/')) {
+        navigate(redirectPath);
+      } else {
+        navigate(data.user?.role === 'Admin' ? '/admin' : '/');
+      }
     } catch {
       setError('Network error during login.');
     } finally {
@@ -79,7 +85,11 @@ export const LoginPage: React.FC = () => {
       await refreshAuth();
       await refreshNotifications();
       showToast({ type: 'success', title: `${role} Session Active`, description: data.message });
-      navigate(role === 'Admin' ? '/admin' : '/profile');
+      if (redirectPath && redirectPath.startsWith('/')) {
+        navigate(redirectPath);
+      } else {
+        navigate(role === 'Admin' ? '/admin' : '/profile');
+      }
     } catch {
       setError('Could not start preview session.');
     } finally {

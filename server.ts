@@ -1025,6 +1025,293 @@ async function startServer() {
   });
 
   // ============================================================================
+  // COMMENTS & COMMUNITY FEEDBACK ROUTES (AUTH REQUIRED FOR POSTING/INTERACTING)
+  // ============================================================================
+  app.get('/api/public/comments', (req, res) => {
+    const db = getDb();
+    const targetType = String(req.query.targetType || '').toLowerCase().trim();
+    const targetSlug = String(req.query.targetSlug || '').toLowerCase().trim();
+    const targetId = String(req.query.targetId || '').trim();
+
+    if (targetType !== 'blog' && targetType !== 'prompt') {
+      return res.status(400).json({ error: 'Valid targetType (blog or prompt) is required.' });
+    }
+
+    const allComments = db.comments || [];
+    const matching = allComments
+      .filter(
+        (c) =>
+          c.targetType === targetType &&
+          ((targetSlug && c.targetSlug.toLowerCase() === targetSlug) ||
+            (targetId && c.targetId === targetId))
+      )
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return res.json({
+      items: matching,
+      totalCount: matching.length,
+    });
+  });
+
+  const createCommentSchema = z.object({
+    targetType: z.enum(['blog', 'prompt']),
+    targetSlug: z.string().min(1, 'Target slug is required'),
+    targetId: z.string().optional(),
+    parentId: z.string().nullable().optional(),
+    content: z
+      .string()
+      .trim()
+      .min(2, 'Comment must be at least 2 characters long.')
+      .max(1500, 'Comment cannot exceed 1500 characters.'),
+    rating: z.number().int().min(1).max(5).optional(),
+  });
+
+  app.post('/api/comments', requireAuth, (req, res) => {
+    const parsed = createCommentSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: parsed.error.issues[0]?.message || 'Invalid comment submission.',
+        issues: parsed.error.issues,
+      });
+    }
+
+    const db = getDb();
+    const currentUser = db.users.find((u) => u.id === req.user!.sub && u.status === 'Active');
+    if (!currentUser) {
+      return res.status(401).json({ error: 'Authentication required to post a comment.' });
+    }
+
+    const { targetType, targetSlug, parentId, content, rating } = parsed.data;
+    const normalizedSlug = targetSlug.toLowerCase().trim();
+
+    let resolvedTargetId = parsed.data.targetId || '';
+    let targetTitle = '';
+    let targetLink = '';
+
+    if (targetType === 'blog') {
+      const blog = db.blogs.find(
+        (b) => b.slug.toLowerCase() === normalizedSlug || b.id === resolvedTargetId
+      );
+      if (!blog || blog.status !== 'Published') {
+        return res.status(404).json({ error: 'Blog post not found.' });
+      }
+      resolvedTargetId = blog.id;
+      targetTitle = blog.title;
+      targetLink = `/blog/${blog.slug}`;
+    } else {
+      const prompt = db.prompts.find(
+        (p) => p.slug.toLowerCase() === normalizedSlug || p.id === resolvedTargetId
+      );
+      if (!prompt || prompt.status !== 'Published') {
+        return res.status(404).json({ error: 'Prompt not found.' });
+      }
+      resolvedTargetId = prompt.id;
+      targetTitle = prompt.title;
+      targetLink = `/prompts/${prompt.slug}`;
+    }
+
+    if (parentId) {
+      const parentExists = (db.comments || []).some(
+        (c) => c.id === parentId && c.targetType === targetType
+      );
+      if (!parentExists) {
+        return res.status(400).json({ error: 'Parent comment no longer exists.' });
+      }
+    }
+
+    const cleanContent = content.replace(/<[^>]*>/g, '').trim();
+    if (cleanContent.length < 2) {
+      return res.status(400).json({ error: 'Please enter valid comment text.' });
+    }
+
+    const now = new Date().toISOString();
+    const newComment = {
+      id: `cmt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      targetType,
+      targetId: resolvedTargetId,
+      targetSlug: normalizedSlug,
+      parentId: parentId || null,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userRole: currentUser.role,
+      userAvatarUrl: currentUser.avatarUrl || '',
+      content: cleanContent,
+      rating: parentId ? undefined : rating,
+      likesUserIds: [] as string[],
+      likesCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    if (!Array.isArray(db.comments)) {
+      db.comments = [];
+    }
+    db.comments.unshift(newComment);
+    saveDatabase();
+
+    io.emit('comment:created', newComment);
+
+    if (currentUser.role !== 'Admin') {
+      const notif = createNotification({
+        recipientRole: 'Admin',
+        type: 'NEW_COMMENT',
+        title: `New Comment on ${targetType === 'blog' ? 'Article' : 'Prompt'}`,
+        message: `${currentUser.name} commented on "${targetTitle}": "${cleanContent.slice(0, 80)}${cleanContent.length > 80 ? '...' : ''}"`,
+        link: targetLink,
+      });
+      emitNotification(notif);
+    }
+
+    if (parentId) {
+      const parentComment = db.comments.find((c) => c.id === parentId);
+      if (parentComment && parentComment.userId !== currentUser.id) {
+        const replyNotif = createNotification({
+          recipientRole: 'User',
+          recipientUserId: parentComment.userId,
+          type: 'NEW_COMMENT',
+          title: `${currentUser.name} replied to your comment`,
+          message: `"${cleanContent.slice(0, 90)}${cleanContent.length > 90 ? '...' : ''}"`,
+          link: targetLink,
+        });
+        emitNotification(replyNotif);
+      }
+    }
+
+    recordAuditLog({
+      actorId: currentUser.id,
+      actorEmail: currentUser.email,
+      action: 'COMMENT_CREATED',
+      targetType: 'Comment',
+      targetId: newComment.id,
+      details: `Posted comment on ${targetType} "${targetTitle}"`,
+    });
+
+    return res.status(201).json({
+      comment: newComment,
+      message: 'Your comment has been published!',
+    });
+  });
+
+  app.put('/api/comments/:id', requireAuth, (req, res) => {
+    const schema = z.object({
+      content: z
+        .string()
+        .trim()
+        .min(2, 'Comment must be at least 2 characters long.')
+        .max(1500, 'Comment cannot exceed 1500 characters.'),
+      rating: z.number().int().min(1).max(5).optional(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: parsed.error.issues[0]?.message || 'Invalid comment update.',
+      });
+    }
+
+    const db = getDb();
+    const comment = (db.comments || []).find((c) => c.id === req.params.id);
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found.' });
+    }
+
+    if (comment.userId !== req.user!.sub && req.user!.role !== 'Admin') {
+      return res.status(403).json({ error: 'You can only edit your own comments.' });
+    }
+
+    const cleanContent = parsed.data.content.replace(/<[^>]*>/g, '').trim();
+    if (cleanContent.length < 2) {
+      return res.status(400).json({ error: 'Please enter valid comment text.' });
+    }
+
+    const now = new Date().toISOString();
+    comment.content = cleanContent;
+    if (!comment.parentId && parsed.data.rating !== undefined) {
+      comment.rating = parsed.data.rating;
+    }
+    comment.editedAt = now;
+    comment.updatedAt = now;
+    saveDatabase();
+
+    io.emit('comment:updated', comment);
+
+    return res.json({
+      comment,
+      message: 'Comment updated.',
+    });
+  });
+
+  app.delete('/api/comments/:id', requireAuth, (req, res) => {
+    const db = getDb();
+    const comment = (db.comments || []).find((c) => c.id === req.params.id);
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found.' });
+    }
+
+    if (comment.userId !== req.user!.sub && req.user!.role !== 'Admin') {
+      return res.status(403).json({ error: 'You can only delete your own comments.' });
+    }
+
+    const idsToDelete = new Set<string>([comment.id]);
+    for (const c of db.comments || []) {
+      if (c.parentId === comment.id) {
+        idsToDelete.add(c.id);
+      }
+    }
+
+    db.comments = (db.comments || []).filter((c) => !idsToDelete.has(c.id));
+    saveDatabase();
+
+    const deletedIds = Array.from(idsToDelete);
+    io.emit('comment:deleted', { ids: deletedIds });
+
+    recordAuditLog({
+      actorId: req.user!.sub,
+      actorEmail: req.user!.email,
+      action: 'COMMENT_DELETED',
+      targetType: 'Comment',
+      targetId: comment.id,
+      details: `Deleted comment ${comment.id} on ${comment.targetType} (${comment.targetSlug})`,
+    });
+
+    return res.json({
+      deletedIds,
+      message: 'Comment deleted.',
+    });
+  });
+
+  app.post('/api/comments/:id/like', requireAuth, (req, res) => {
+    const db = getDb();
+    const comment = (db.comments || []).find((c) => c.id === req.params.id);
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found.' });
+    }
+
+    const userId = req.user!.sub;
+    const existing = new Set(comment.likesUserIds || []);
+    let liked = false;
+
+    if (existing.has(userId)) {
+      existing.delete(userId);
+      liked = false;
+    } else {
+      existing.add(userId);
+      liked = true;
+    }
+
+    comment.likesUserIds = Array.from(existing);
+    comment.likesCount = comment.likesUserIds.length;
+    comment.updatedAt = new Date().toISOString();
+    saveDatabase();
+
+    io.emit('comment:updated', comment);
+
+    return res.json({
+      comment,
+      liked,
+    });
+  });
+
+  // ============================================================================
   // PUBLIC ENQUIRY / CONTACT SUBMISSION
   // ============================================================================
   const enquirySchema = z.object({
